@@ -865,14 +865,14 @@ export default function StageCanvas() {
         triggers.push(
           ScrollTrigger.create({
             trigger: el,
-            start: name === "acts" ? "top top" : "top 78%",
-            end: name === "acts" ? "bottom bottom" : "bottom 22%",
+            start: "top 82%",
+            end: "bottom 18%",
             scrub: reduced ? true : 0.45,
             onUpdate: (self) => {
               scene.current = name;
               progress.current = self.progress;
               const r = el.getBoundingClientRect();
-              anchor.current = name === "acts" ? null : r.top + r.height / 2;
+              anchor.current = r.top + r.height / 2;
               draw();
             },
             onEnterBack: () => {

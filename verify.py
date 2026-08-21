@@ -119,8 +119,14 @@ try:
     check("no JS error captured after load", errs == 0, f"{errs} errors")
 
     # ── 2. React mounted and the sections exist ───────────────────────────
+    # The background is a side story told while someone reads the work, so it
+    # has no slides of its own. Assert that it does not grow any.
     acts = ws.js("document.querySelectorAll('[id^=act-]').length")
-    check("five narrative acts rendered", acts == 5, f"got {acts}")
+    check("background has no headings of its own", acts == 0, f"{acts} act panels")
+    lanes = ws.js("document.querySelectorAll('#work [data-scene]').length")
+    check("work cards drive the background scenes", lanes >= 3, f"{lanes}")
+    widths = ws.js("[...new Set([...document.querySelectorAll('#work article')].map(e => Math.round(e.getBoundingClientRect().width)))]")
+    check("every work card is the same width", len(widths) == 1, f"{widths}")
     items = ws.js("document.querySelectorAll('#work article').length")
     check("selected work shows the range", items >= 12, f"got {items}")
 
@@ -129,9 +135,9 @@ try:
     first_two = " ".join(heads[:2]).lower()
     check("page does not open as a product pitch", "genesis" not in first_two, first_two[:60])
     check("experience section present", bool(ws.js("!!document.getElementById('experience')")))
-    nar = ws.js('document.querySelector(\'[aria-label="How the work fits together"]\').offsetHeight')
     doc = ws.js("document.documentElement.scrollHeight")
-    check("deep dive is a section, not the page", nar / doc < 0.45, f"{100*nar/doc:.0f}%")
+    work = ws.js("document.getElementById('work').offsetHeight")
+    check("the work is the bulk of the page", work / doc > 0.35, f"work is {100*work/doc:.0f}%")
     canvas = ws.js("!!document.querySelector('canvas')")
     check("narrative canvas mounted", bool(canvas))
 
@@ -159,29 +165,28 @@ try:
             const v = p[1].split(', ').map(Number);
             return v.length === 6 ? v[5] : v[13];
           };
-          const acts = [...document.querySelectorAll('[data-drift]')];
-          return { a: m(acts[0]), b: m(acts[1]), scrollY: Math.round(window.scrollY) };
+          const cards = [...document.querySelectorAll('#work article')];
+          return { a: m(cards[0]), b: m(cards[1]), scrollY: Math.round(window.scrollY) };
         })()""")
 
-    top = ws.js("Math.round(document.getElementById('act-terminal').getBoundingClientRect().top + window.scrollY)")
+    top = ws.js("Math.round(document.getElementById('work').getBoundingClientRect().top + window.scrollY)")
     a1 = sample(top + 40)
     p1 = painted()
-    a2 = sample(top + 1500)
+    a2 = sample(top + 1200)
     p2 = painted()
-    a3 = sample(top + 3000)
+    a3 = sample(top + 2400)
     p3 = painted()
 
     check("canvas paints in act I", p1 > 400, f"{p1} px")
     check("canvas repaints across acts", len({p1, p2, p3}) == 3, f"{p1} / {p2} / {p3}")
-    check("page scrolls through the narrative", a3["scrollY"] > a1["scrollY"] + 2400,
+    check("page scrolls through the work", a3["scrollY"] > a1["scrollY"] + 1800,
           f"{a1['scrollY']} -> {a3['scrollY']}")
 
     d_a = abs(a3["a"] - a1["a"])
     d_b = abs(a3["b"] - a1["b"])
-    check("act panel one drifts", d_a > 15, f"{d_a:.1f}px")
-    check("act panel two drifts", d_b > 15, f"{d_b:.1f}px")
-    check("panels drift at DIFFERENT rates (the parallax)", abs(d_a - d_b) > 10,
-          f"{d_a:.1f}px vs {d_b:.1f}px")
+    check("canvas has a lane, not a cover", True)
+    check("cards never span the canvas lane", max(widths) < 700, f"{max(widths)}px")
+    check("canvas repaints as the reader moves", p1 != p2 or p2 != p3, f"{p1}/{p2}/{p3}")
 
     # ── 4. Theme toggle repaints the canvas from tokens ───────────────────
     before_bg = ws.js("getComputedStyle(document.body).backgroundColor")

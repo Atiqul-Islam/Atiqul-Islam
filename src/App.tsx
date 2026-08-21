@@ -6,7 +6,7 @@ import StageCanvas from "./components/StageCanvas";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import WorkCard from "./components/WorkCard";
-import { ACTS, CAPABILITIES, EXPERIENCE, STACK, WORK } from "./data/portfolio";
+import { CAPABILITIES, EXPERIENCE, STACK, WORK } from "./data/portfolio";
 import { useSmoothScroll } from "./lib/useSmoothScroll";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -117,7 +117,10 @@ export default function App() {
         </section>
 
         {/* ── Selected work: the range, before any depth ──────────────────── */}
-        <section id="work" className="border-t border-line py-[clamp(4rem,9vw,6.5rem)]">
+        <section
+          id="work"
+          className="relative border-t border-line py-[clamp(4rem,9vw,6.5rem)]"
+        >
           <div className={wrap}>
             <div data-reveal className="mb-11 max-w-[60ch]">
               <p className="eyebrow">Selected work</p>
@@ -128,48 +131,12 @@ export default function App() {
                 Employer work is described, not linked. Everything else you can clone.
               </p>
             </div>
-            <div className="grid auto-rows-min gap-5 lg:grid-cols-2">
+            <div className="flex flex-col gap-5 lg:max-w-[34rem]">
               {WORK.map((w) => (
                 <WorkCard key={w.id} work={w} />
               ))}
             </div>
           </div>
-        </section>
-
-        {/* ── The deep dive, labelled as one ──────────────────────────────── */}
-        <section
-          className="relative border-t border-line"
-          aria-label="How the work fits together"
-          data-scene="acts"
-        >
-          <div className={`${wrap} pt-[clamp(3.5rem,7vw,5.5rem)]`}>
-            <div data-reveal className="max-w-[60ch]">
-              <p className="eyebrow">A closer look · Genesis</p>
-              <h2 className="wide mt-3 text-[clamp(1.85rem,1.35rem+2vw,2.9rem)]">
-                What an agent system looks like when it has to hold up.
-              </h2>
-              <p className="mt-4 text-ink-dim">
-                One of the projects above, in five steps, drawn as you scroll.
-              </p>
-            </div>
-          </div>
-
-          {ACTS.map((a, i) => (
-            <div
-              key={a.id}
-              id={a.id}
-              className="relative flex min-h-[84svh] items-center"
-              data-drift={["1", "1.9", "1.35", "2.1", "1.6"][i]}
-            >
-              <div className={wrap}>
-                <div className="max-w-[33rem] rounded-3xl border border-line bg-surface-lo/72 p-8 backdrop-blur-md sm:p-9">
-                  <p className="eyebrow tabular-nums">{a.label} / 05</p>
-                  <h3 className="wide mt-3 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)]">{a.title}</h3>
-                  <p className="mt-4 text-ink-dim">{a.body}</p>
-                </div>
-              </div>
-            </div>
-          ))}
         </section>
 
         {/* ── Experience ─────────────────────────────────────────────────── */}

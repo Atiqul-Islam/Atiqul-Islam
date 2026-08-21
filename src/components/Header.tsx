@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 const LINKS = [
   ["Work", "#work"],
-  ["Genesis", "#act-terminal"],
   ["Experience", "#experience"],
   ["Stack", "#stack"],
   ["Contact", "#contact"],

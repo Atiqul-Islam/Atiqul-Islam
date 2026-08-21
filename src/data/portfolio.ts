@@ -49,8 +49,8 @@ export interface Work {
   links?: { label: string; href: string }[];
   /** Names a background scene to draw while this card is on screen. */
   scene?: string;
-  /** Flagship items get the wide treatment. */
-  feature?: boolean;
+  /** Extra height, so a longer background beat has room to play out. */
+  dwell?: boolean;
 }
 
 export const WORK: Work[] = [
@@ -59,7 +59,6 @@ export const WORK: Work[] = [
     name: "Zero code model workflow",
     where: "Instrumar",
     status: "production",
-    feature: true,
     lead: "People who do not write code ship production ML models through it.",
     body: "I designed and built a workflow that lets analysts and systems engineers build, validate and ship production models themselves. Some of the models built through it run in production today. The rest are built and in testing. The outcome is the point: domain experts ship without a developer in the loop, which is a different thing from making a developer faster.",
     role: "Designed and built it",
@@ -92,7 +91,6 @@ export const WORK: Work[] = [
     name: "Killick-1 CubeSat",
     where: "Memorial University · capstone",
     status: "shipped",
-    feature: true,
     lead: "Comms flight software for a CubeSat that reached orbit.",
     body: "Mission Control Subsystem work in embedded C on FreeRTOS, against an MSP430 class on board computer: RTOS task design, I2C and SPI peripherals, FRAM storage, and the failure handling a system gets when nobody can go and reboot it. It is the one thing on this page where the deployment target was orbit.",
     role: "Capstone. Embedded C and RTOS",
@@ -140,10 +138,11 @@ export const WORK: Work[] = [
   },
   {
     id: "genesis",
+    scene: "acts",
+    dwell: true,
     name: "Genesis",
     where: "Open source · MIT",
     status: "beta",
-    feature: true,
     lead: "An agent builder that makes an agent provably apply its expertise.",
     body: "An LLM agent can hold an instruction in its context and still not apply it. Genesis moves enforcement outside the model: expertise is decomposed into rules with stable IDs, and the checkable ones compile into fail closed hooks that deny a write breaking one and refuse to let the agent finish until it cites the rules it applied with evidence. Three Rust crates, a Model Context Protocol server, local ONNX embeddings and SQLite vector search, fully offline. It is self hosting, and agents built with it work as the engineers on live systems.",
     role: "Sole author, 17 releases",
