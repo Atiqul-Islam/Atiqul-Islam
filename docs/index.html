@@ -9,27 +9,27 @@
 <meta property="og:title" content="Atiqul Islam">
 <meta property="og:description" content="I build the agent infrastructure other engineers ship on.">
 <meta property="og:type" content="website">
+<script>document.documentElement.classList.add("js");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
 
 <style>
-/* ─────────────────────────────────────────────────────────────────────────
-   Material Design 3 roles, expressed as tokens.
+/* ═════════════════════════════════════════════════════════════════════════
+   Material Design 3 roles, as tokens.
 
-   The tonal values are authored in oklch rather than hex so that a step from
-   one tone to the next is a perceptually even step. That is the whole premise
-   of an MD3 tonal palette, and hex cannot hold it: two hex values four points
-   apart in lightness look four different distances apart depending on hue.
+   Tonal values are authored in oklch rather than hex so a step from one tone
+   to the next is a perceptually even step. That is the premise of an MD3
+   tonal palette and hex cannot hold it: two hex values four points apart in
+   lightness look four different distances apart depending on hue.
 
-   Every surface and every colour that sits on it comes from this one block.
-   Nothing below redefines a colour inside a media query except the tokens.
-   ───────────────────────────────────────────────────────────────────────── */
+   --viz-* are rgb triples rather than oklch, because the canvas reads them
+   back through getComputedStyle and builds rgba() strings from the channels.
+   ═════════════════════════════════════════════════════════════════════════ */
 
 :root {
   color-scheme: light;
 
-  /* Seeded from the pine used in the Genesis deck, so the surfaces agree. */
   --surface:              oklch(0.985 0.004 170);
   --surface-container-lo: oklch(0.966 0.006 170);
   --surface-container:    oklch(0.946 0.008 170);
@@ -48,86 +48,107 @@
   --tertiary-container:   oklch(0.906 0.055 78);
   --on-tertiary-container:oklch(0.302 0.058 72);
 
-  /* Reserved for the deny state and nothing else. In his own work red
-     already means blocked, so spending it on decoration would misread. */
+  /* Reserved for the deny state. In his work red already means blocked, so
+     spending it on decoration would misread. */
   --deny:                 oklch(0.482 0.148 25);
   --deny-container:       oklch(0.912 0.046 25);
   --on-deny-container:    oklch(0.302 0.092 25);
 
-  --shadow: 0 1px 2px oklch(0.235 0.014 170 / 0.10),
-            0 4px 14px oklch(0.235 0.014 170 / 0.06);
+  --viz-node: 47 111 94;
+  --viz-edge: 47 111 94;
+  --viz-alpha-node: 0.30;
+  --viz-alpha-edge: 0.13;
+  --viz-alpha-pkt: 0.72;
 
-  /* MD3 shape scale */
+  --shadow: 0 1px 2px oklch(0.235 0.014 170 / 0.10),
+            0 8px 28px oklch(0.235 0.014 170 / 0.07);
+
   --r-xs: 4px;  --r-s: 8px;  --r-m: 12px;  --r-l: 16px;  --r-xl: 28px;
 
-  --measure: 66ch;
   --gutter: clamp(1.25rem, 4vw, 4rem);
-
   --sans: "Archivo", ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-
   --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* System dark, unless the reader has explicitly chosen light. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --surface:              oklch(0.178 0.010 170);
-    --surface-container-lo: oklch(0.212 0.012 170);
-    --surface-container:    oklch(0.243 0.013 170);
-    --surface-container-hi: oklch(0.283 0.015 170);
-    --on-surface:           oklch(0.922 0.008 170);
-    --on-surface-variant:   oklch(0.752 0.013 170);
+    --surface:              oklch(0.168 0.010 170);
+    --surface-container-lo: oklch(0.204 0.012 170);
+    --surface-container:    oklch(0.238 0.013 170);
+    --surface-container-hi: oklch(0.280 0.015 170);
+    --on-surface:           oklch(0.928 0.008 170);
+    --on-surface-variant:   oklch(0.756 0.013 170);
     --outline:              oklch(0.560 0.013 170);
-    --outline-variant:      oklch(0.378 0.013 170);
+    --outline-variant:      oklch(0.372 0.013 170);
 
-    --primary:              oklch(0.802 0.082 168);
+    --primary:              oklch(0.808 0.082 168);
     --on-primary:           oklch(0.238 0.056 168);
     --primary-container:    oklch(0.342 0.062 168);
-    --on-primary-container: oklch(0.884 0.060 168);
+    --on-primary-container: oklch(0.888 0.060 168);
 
-    --tertiary:             oklch(0.822 0.080 78);
+    --tertiary:             oklch(0.826 0.080 78);
     --tertiary-container:   oklch(0.358 0.056 75);
-    --on-tertiary-container:oklch(0.902 0.055 78);
+    --on-tertiary-container:oklch(0.906 0.055 78);
 
-    --deny:                 oklch(0.752 0.112 25);
+    --deny:                 oklch(0.756 0.112 25);
     --deny-container:       oklch(0.352 0.092 25);
-    --on-deny-container:    oklch(0.902 0.050 25);
+    --on-deny-container:    oklch(0.906 0.050 25);
 
-    --shadow: 0 1px 2px oklch(0.08 0 0 / 0.5), 0 6px 20px oklch(0.08 0 0 / 0.35);
+    --viz-node: 126 214 190;
+    --viz-edge: 126 214 190;
+    --viz-alpha-node: 0.36;
+    --viz-alpha-edge: 0.15;
+    --viz-alpha-pkt: 0.85;
+
+    --shadow: 0 1px 2px oklch(0.06 0 0 / 0.55), 0 10px 34px oklch(0.06 0 0 / 0.4);
   }
 }
 
-/* Explicit dark choice wins over a light OS. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface:              oklch(0.178 0.010 170);
-  --surface-container-lo: oklch(0.212 0.012 170);
-  --surface-container:    oklch(0.243 0.013 170);
-  --surface-container-hi: oklch(0.283 0.015 170);
-  --on-surface:           oklch(0.922 0.008 170);
-  --on-surface-variant:   oklch(0.752 0.013 170);
+  --surface:              oklch(0.168 0.010 170);
+  --surface-container-lo: oklch(0.204 0.012 170);
+  --surface-container:    oklch(0.238 0.013 170);
+  --surface-container-hi: oklch(0.280 0.015 170);
+  --on-surface:           oklch(0.928 0.008 170);
+  --on-surface-variant:   oklch(0.756 0.013 170);
   --outline:              oklch(0.560 0.013 170);
-  --outline-variant:      oklch(0.378 0.013 170);
+  --outline-variant:      oklch(0.372 0.013 170);
 
-  --primary:              oklch(0.802 0.082 168);
+  --primary:              oklch(0.808 0.082 168);
   --on-primary:           oklch(0.238 0.056 168);
   --primary-container:    oklch(0.342 0.062 168);
-  --on-primary-container: oklch(0.884 0.060 168);
+  --on-primary-container: oklch(0.888 0.060 168);
 
-  --tertiary:             oklch(0.822 0.080 78);
+  --tertiary:             oklch(0.826 0.080 78);
   --tertiary-container:   oklch(0.358 0.056 75);
-  --on-tertiary-container:oklch(0.902 0.055 78);
+  --on-tertiary-container:oklch(0.906 0.055 78);
 
-  --deny:                 oklch(0.752 0.112 25);
+  --deny:                 oklch(0.756 0.112 25);
   --deny-container:       oklch(0.352 0.092 25);
-  --on-deny-container:    oklch(0.902 0.050 25);
+  --on-deny-container:    oklch(0.906 0.050 25);
 
-  --shadow: 0 1px 2px oklch(0.08 0 0 / 0.5), 0 6px 20px oklch(0.08 0 0 / 0.35);
+  --viz-node: 126 214 190;
+  --viz-edge: 126 214 190;
+  --viz-alpha-node: 0.36;
+  --viz-alpha-edge: 0.15;
+  --viz-alpha-pkt: 0.85;
+
+  --shadow: 0 1px 2px oklch(0.06 0 0 / 0.55), 0 10px 34px oklch(0.06 0 0 / 0.4);
 }
 
+/* Animatable custom properties. Registering them with a type is what lets the
+   browser interpolate a gradient stop or a spotlight position at all; an
+   unregistered custom property jumps between values instead of easing. */
+@property --spot-x { syntax: "<percentage>"; inherits: false; initial-value: 50%; }
+@property --spot-y { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+@property --sweep  { syntax: "<angle>";      inherits: false; initial-value: 0deg; }
+
 *, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
@@ -138,10 +159,9 @@ body {
   line-height: 1.62;
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* The width axis is the characterful move. Display type runs expanded and
-   tight; body type stays at normal width so it reads long. */
 h1, h2, h3, .display {
   font-variation-settings: "wdth" 118;
   font-weight: 700;
@@ -151,316 +171,432 @@ h1, h2, h3, .display {
   margin: 0;
 }
 p { text-wrap: pretty; margin: 0; }
-
 a { color: var(--primary); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { text-decoration-thickness: 2px; }
-
-:focus-visible {
-  outline: 3px solid var(--primary);
-  outline-offset: 3px;
-  border-radius: var(--r-xs);
-}
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; border-radius: var(--r-xs); }
 
 .skip {
-  position: absolute; left: 0.75rem; top: -4rem; z-index: 20;
+  position: fixed; left: 0.75rem; top: -5rem; z-index: 60;
   background: var(--primary); color: var(--on-primary);
   padding: 0.7rem 1.1rem; border-radius: var(--r-s);
-  font-weight: 600; text-decoration: none;
-  transition: top 160ms var(--ease);
+  font-weight: 600; text-decoration: none; transition: top 160ms var(--ease);
 }
 .skip:focus { top: 0.75rem; }
 
-.wrap {
-  width: min(100% - var(--gutter) * 2, 74rem);
-  margin-inline: auto;
-}
+.wrap { width: min(100% - var(--gutter) * 2, 74rem); margin-inline: auto; }
 
-/* ── Eyebrow labels ──────────────────────────────────────────────────────
-   Mono, because every label on this page is a real identifier from the work:
-   a rule ID, a status from the fixed vocabulary, a package name. */
-.eyebrow {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--on-surface-variant);
-  margin: 0;
+/* ── The ambient field ───────────────────────────────────────────────────
+   A supervisor routing agents is the shape of nearly everything on this
+   page, so the background draws that rather than abstract noise: a hub, its
+   spokes, and packets moving along them. It parallaxes against scroll and
+   stops entirely when the reader asks for reduced motion. */
+#field {
+  position: fixed; inset: 0;
+  z-index: -1; pointer-events: none;
+  opacity: 0; transition: opacity 900ms var(--ease);
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 74% 44%, #000 26%, transparent 76%);
+          mask-image: radial-gradient(ellipse 62% 58% at 74% 44%, #000 26%, transparent 76%);
 }
+#field.ready { opacity: 1; }
+
+/* ── Scroll progress ─────────────────────────────────────────────────────
+   Driven by the document scroll timeline, so it is the browser's own
+   scrolling that advances it. No scroll listener, no layout reads. */
+.progress {
+  position: fixed; inset-block-start: 0; inset-inline: 0;
+  block-size: 2px; z-index: 50;
+  background: var(--primary);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+@supports (animation-timeline: scroll()) {
+  .progress {
+    animation: grow linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes grow { to { transform: scaleX(1); } }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
 header.bar {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in oklab, var(--surface) 86%, transparent);
-  backdrop-filter: blur(14px) saturate(1.4);
-  border-bottom: 1px solid var(--outline-variant);
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in oklab, var(--surface) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(1.6);
+  border-bottom: 1px solid transparent;
+  transition: border-color 240ms var(--ease), background-color 240ms var(--ease);
 }
-.bar-in {
-  display: flex; align-items: center; gap: 1rem;
-  min-height: 4rem;
-}
+header.bar.stuck { border-bottom-color: var(--outline-variant); }
+.bar-in { display: flex; align-items: center; gap: 1rem; min-height: 4rem; }
 .brand {
-  font-variation-settings: "wdth" 118;
-  font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em;
-  color: var(--on-surface); text-decoration: none;
-  margin-right: auto;
+  font-variation-settings: "wdth" 118; font-weight: 700; font-size: 1.02rem;
+  letter-spacing: -0.01em; color: var(--on-surface); text-decoration: none; margin-right: auto;
 }
 nav.links { display: flex; gap: 0.35rem; }
 nav.links a {
   color: var(--on-surface-variant); text-decoration: none;
-  font-size: 0.9rem; font-weight: 500;
-  padding: 0.5rem 0.75rem; border-radius: var(--r-s);
-  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+  font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem;
+  border-radius: var(--r-s); position: relative;
+  transition: color 140ms var(--ease);
 }
-nav.links a:hover {
-  color: var(--on-surface);
-  background: color-mix(in oklab, var(--on-surface) 8%, transparent);
+nav.links a::after {
+  content: ""; position: absolute; inset-inline: 0.75rem; inset-block-end: 0.3rem;
+  block-size: 1.5px; background: currentColor;
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 260ms var(--ease-out);
 }
+nav.links a:hover { color: var(--on-surface); }
+nav.links a:hover::after { transform: scaleX(1); }
 @media (max-width: 46rem) { nav.links { display: none; } }
 
-/* MD3 icon button with a real state layer */
 .icon-btn {
-  inline-size: 2.5rem; block-size: 2.5rem;
-  display: grid; place-items: center;
-  border: 1px solid var(--outline-variant);
-  border-radius: 50%;
-  background: transparent; color: var(--on-surface-variant);
-  cursor: pointer;
-  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+  inline-size: 2.5rem; block-size: 2.5rem; display: grid; place-items: center;
+  border: 1px solid var(--outline-variant); border-radius: 50%;
+  background: transparent; color: var(--on-surface-variant); cursor: pointer;
+  transition: background-color 140ms var(--ease), color 140ms var(--ease), rotate 420ms var(--ease-out);
 }
 .icon-btn:hover {
   background: color-mix(in oklab, var(--on-surface) 8%, transparent);
-  color: var(--on-surface);
+  color: var(--on-surface); rotate: 25deg;
 }
 .icon-btn svg { inline-size: 1.15rem; block-size: 1.15rem; fill: currentColor; }
-[data-theme="dark"] .sun, :root:not([data-theme="light"]) .sun { display: none; }
-[data-theme="dark"] .moon, :root:not([data-theme="light"]) .moon { display: block; }
 .moon { display: none; }
-[data-theme="light"] .sun { display: block; }
-[data-theme="light"] .moon { display: none; }
+:root:not([data-theme="light"]) .sun { display: none; }
+:root:not([data-theme="light"]) .moon { display: block; }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) .sun { display: block; }
   :root:not([data-theme="dark"]) .moon { display: none; }
 }
+:root[data-theme="light"] .sun { display: block; }
+:root[data-theme="light"] .moon { display: none; }
+:root[data-theme="dark"] .sun { display: none; }
+:root[data-theme="dark"] .moon { display: block; }
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
-.hero { padding-block: clamp(3.5rem, 9vw, 7rem) clamp(2.5rem, 6vw, 4.5rem); }
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(2.5rem, 5vw, 4rem);
-  align-items: start;
+.hero {
+  min-block-size: clamp(38rem, 92svh, 56rem);
+  display: grid; align-content: center;
+  padding-block: 4rem 6rem; position: relative;
 }
-@media (min-width: 62rem) {
-  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 27rem); }
+.eyebrow {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--on-surface-variant); margin: 0;
+}
+.eyebrow .dot {
+  display: inline-block; inline-size: 6px; block-size: 6px; border-radius: 50%;
+  background: var(--primary); margin-inline-end: 0.6rem; vertical-align: 0.1em;
+  animation: pulse 2.6s var(--ease) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 55%, transparent); }
+  50%      { opacity: 0.7; box-shadow: 0 0 0 6px color-mix(in oklab, var(--primary) 0%, transparent); }
 }
 
-/* Capped well below the width the fluid curve would reach on a wide screen.
-   At 5rem this sentence broke to five lines and stopped reading as a
-   sentence; the reader saw a wall of letterforms and had to assemble it. */
 h1 {
-  font-size: clamp(2.15rem, 1.5rem + 2.5vw, 3.55rem);
+  font-size: clamp(2.3rem, 1.35rem + 3.5vw, 4.6rem);
   font-variation-settings: "wdth" 122;
-  max-width: 17ch;
-  margin-block: 0.7rem 0;
+  max-width: 19ch; margin-block: 1rem 0;
 }
-.lede {
-  font-size: clamp(1.15rem, 1.02rem + 0.6vw, 1.45rem);
-  color: var(--on-surface-variant);
-  max-width: 34ch;
-  margin-top: 1.25rem;
-  line-height: 1.45;
+/* Word-level reveal. Each word rides up from behind its own clip, which
+   reads as the sentence assembling rather than the block fading in. */
+.word { display: inline-block; overflow: hidden; vertical-align: bottom; padding-block-end: 0.06em; }
+.word > i {
+  display: inline-block; font-style: inherit;
+  transform: translateY(105%);
+  animation: word-up 760ms var(--ease-out) forwards;
+  animation-delay: calc(var(--w) * 45ms + 90ms);
 }
-.hero p.sub { margin-top: 1.5rem; max-width: 52ch; color: var(--on-surface-variant); }
+@keyframes word-up { to { transform: none; } }
 
-.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+.lede {
+  font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.6rem);
+  color: var(--on-surface-variant); max-width: 36ch;
+  margin-top: 1.6rem; line-height: 1.4;
+}
+/* Content first. The hidden start state is applied only once the inline script
+   has stamped .js on the root, so a reader without JS, or with the stylesheet
+   loaded and the script blocked, never gets a permanently invisible hero.
+   Anything that animates its way to visible must be able to skip the trip. */
+.js .fade-up { opacity: 0; transform: translateY(14px); animation: fu 720ms var(--ease-out) forwards; }
+@keyframes fu { to { opacity: 1; transform: none; } }
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.4rem; }
 .btn {
+  position: relative; overflow: hidden;
   display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.72rem 1.4rem; border-radius: 999px;
+  padding: 0.8rem 1.5rem; border-radius: 999px;
   font-weight: 600; font-size: 0.95rem; text-decoration: none;
   border: 1px solid transparent; cursor: pointer;
-  transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease);
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease);
 }
+.btn:hover { transform: translateY(-2px); }
 .btn-filled { background: var(--primary); color: var(--on-primary); }
-.btn-filled:hover { box-shadow: var(--shadow); background: color-mix(in oklab, var(--primary) 92%, var(--on-surface)); }
+.btn-filled:hover { box-shadow: var(--shadow); }
+/* A sheen that crosses once on hover, rather than a colour swap. */
+.btn-filled::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 30%,
+              color-mix(in oklab, var(--on-primary) 26%, transparent) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform 720ms var(--ease-out);
+}
+.btn-filled:hover::after { transform: translateX(130%); }
 .btn-out { border-color: var(--outline); color: var(--on-surface); }
 .btn-out:hover { background: color-mix(in oklab, var(--on-surface) 8%, transparent); }
 
-/* ── The enforcement panel: the thesis, not an illustration of it ───────── */
+.cue {
+  position: absolute; inset-block-end: 2rem; inset-inline-start: 0;
+  display: flex; align-items: center; gap: 0.7rem;
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--on-surface-variant);
+}
+.cue .rail {
+  inline-size: 3rem; block-size: 1px; background: var(--outline-variant); position: relative; overflow: hidden;
+}
+.cue .rail::after {
+  content: ""; position: absolute; inset-block: 0; inline-size: 40%;
+  background: var(--primary); animation: rail 2.2s var(--ease) infinite;
+}
+@keyframes rail { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+
+/* ── The scroll stage: the argument, told by scrolling ───────────────────
+   A tall track with a sticky panel inside it. Scroll position through the
+   track drives which step is revealed, so the reader advances the run
+   themselves instead of watching a canned loop. */
+.stage { position: relative; }
+.stage-track { block-size: 340svh; position: relative; }
+.stage-sticky {
+  position: sticky; top: 0; block-size: 100svh;
+  display: grid; align-content: center;
+}
+.stage-grid { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+@media (min-width: 62rem) { .stage-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); } }
+
+.stage-copy h2 { font-size: clamp(1.8rem, 1.3rem + 2vw, 3rem); margin-block: 0.7rem 0; }
+.stage-copy p { color: var(--on-surface-variant); margin-top: 1.1rem; max-width: 44ch; }
+
 .panel {
-  background: var(--surface-container-lo);
+  background: color-mix(in oklab, var(--surface-container-lo) 88%, transparent);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--outline-variant);
   border-radius: var(--r-xl);
   padding: 1.5rem;
   container-type: inline-size;
+  box-shadow: var(--shadow);
 }
 .panel-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
 .panel-head .eyebrow { margin-right: auto; }
 
 .seg {
   display: inline-flex; padding: 3px;
-  background: var(--surface-container);
-  border-radius: 999px; border: 1px solid var(--outline-variant);
+  background: var(--surface-container); border-radius: 999px;
+  border: 1px solid var(--outline-variant); position: relative;
 }
 .seg button {
   font: inherit; font-size: 0.82rem; font-weight: 600;
   padding: 0.38rem 0.85rem; border: 0; border-radius: 999px;
   background: transparent; color: var(--on-surface-variant); cursor: pointer;
-  transition: background-color 180ms var(--ease), color 180ms var(--ease);
+  position: relative; z-index: 1;
+  transition: color 220ms var(--ease);
 }
-.seg button[aria-pressed="true"] {
-  background: var(--primary-container); color: var(--on-primary-container);
+.seg button[aria-pressed="true"] { color: var(--on-primary-container); }
+.seg .thumb {
+  position: absolute; inset-block: 3px; border-radius: 999px;
+  background: var(--primary-container);
+  transition: translate 380ms var(--ease-out), width 380ms var(--ease-out);
 }
 
 .steps { display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
 .step {
-  display: grid;
-  grid-template-columns: 1.6rem 1fr auto;
+  display: grid; grid-template-columns: 1.6rem 1fr auto;
   align-items: center; gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
+  padding: 0.72rem 0.85rem;
   background: var(--surface);
   border: 1px solid var(--outline-variant);
   border-radius: var(--r-m);
   font-family: var(--mono); font-size: 0.8rem;
   color: var(--on-surface-variant);
-  opacity: 0;
-  transform: translateY(6px);
-  animation: rise 380ms var(--ease) forwards;
-  animation-delay: calc(var(--i) * 110ms);
+  opacity: 0.28; filter: blur(1px);
+  transform: translateY(4px) scale(0.985);
+  transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out),
+              filter 420ms var(--ease-out), border-color 300ms var(--ease),
+              background-color 300ms var(--ease);
 }
-@keyframes rise { to { opacity: 1; transform: none; } }
-
-.step .n { color: var(--outline); font-size: 0.72rem; }
+.step.on { opacity: 1; filter: none; transform: none; }
+.step .n { color: var(--outline); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
 .step .what { color: var(--on-surface); overflow-wrap: anywhere; }
 
 .tag {
   font-family: var(--mono); font-size: 0.66rem; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 0.22rem 0.5rem; border-radius: var(--r-xs); white-space: nowrap;
+  padding: 0.24rem 0.5rem; border-radius: var(--r-xs); white-space: nowrap;
 }
 .tag-ok   { background: var(--primary-container);  color: var(--on-primary-container); }
 .tag-deny { background: var(--deny-container);     color: var(--on-deny-container); }
 .tag-warn { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 
-.step.is-deny { border-color: color-mix(in oklab, var(--deny) 45%, var(--outline-variant)); }
+.step.is-deny.on {
+  border-color: color-mix(in oklab, var(--deny) 55%, var(--outline-variant));
+  background: color-mix(in oklab, var(--deny) 7%, var(--surface));
+  animation: jolt 460ms var(--ease-out);
+}
+@keyframes jolt {
+  0% { transform: translateX(0); } 22% { transform: translateX(-5px); }
+  44% { transform: translateX(4px); } 66% { transform: translateX(-2px); } 100% { transform: none; }
+}
 .step.is-drift { border-style: dashed; }
 
 .verdict {
-  margin-top: 1rem; padding: 0.9rem 1rem;
-  border-radius: var(--r-m); font-size: 0.9rem; line-height: 1.5;
+  margin-top: 1rem; padding: 0.95rem 1.05rem; border-radius: var(--r-m);
+  font-size: 0.9rem; line-height: 1.5;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 460ms var(--ease-out), transform 460ms var(--ease-out);
 }
-.verdict.ok   { background: var(--primary-container); color: var(--on-primary-container); }
-.verdict.bad  { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+.verdict.on { opacity: 1; transform: none; }
+.verdict.ok  { background: var(--primary-container);  color: var(--on-primary-container); }
+.verdict.bad { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 .verdict strong { font-variation-settings: "wdth" 112; }
 
-/* Only drop the tag onto its own row when it genuinely cannot sit beside the
-   step text. At 26rem this fired while there was still room, and every step
-   grew a second line for no reason. */
 @container (max-width: 21rem) {
   .step { grid-template-columns: 1.4rem 1fr; row-gap: 0.4rem; }
   .step .tag { grid-column: 2; justify-self: start; }
 }
 
-/* ── Sections ───────────────────────────────────────────────────────────── */
-section { padding-block: clamp(3rem, 7vw, 5.5rem); }
-section + section { border-top: 1px solid var(--outline-variant); }
-.sec-head { max-width: var(--measure); margin-bottom: clamp(2rem, 4vw, 3rem); }
-.sec-head h2 {
-  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.7rem);
-  margin-top: 0.6rem;
+/* ── Scroll reveals ──────────────────────────────────────────────────────
+   Guarded behind @supports so that a browser without scroll timelines never
+   hides the content it cannot then reveal. Content-first is the only safe
+   default for a progressive enhancement that controls opacity. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 26%;
+    }
+    @keyframes reveal-in {
+      from { opacity: 0; transform: translateY(34px); }
+      to   { opacity: 1; transform: none; }
+    }
+  }
 }
-.sec-head p { margin-top: 1rem; color: var(--on-surface-variant); }
 
-/* ── Project cards ──────────────────────────────────────────────────────── */
+/* ── Sections ───────────────────────────────────────────────────────────── */
+section.band { padding-block: clamp(4rem, 9vw, 7rem); position: relative; }
+section.band + section.band::before {
+  content: ""; position: absolute; inset-inline: var(--gutter); inset-block-start: 0;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, var(--outline-variant) 18%,
+              var(--outline-variant) 82%, transparent);
+}
+.sec-head { max-width: 62ch; margin-bottom: clamp(2.25rem, 4vw, 3.25rem); }
+.sec-head h2 { font-size: clamp(1.85rem, 1.35rem + 2vw, 2.9rem); margin-top: 0.7rem; }
+.sec-head p { margin-top: 1.1rem; color: var(--on-surface-variant); }
+
+/* ── Project cards, with a pointer-tracked spotlight ─────────────────────
+   The gradient centre follows the cursor through two registered custom
+   properties. Registering them is what makes the position interpolate
+   instead of snapping between pointermove events. */
 .cards { display: grid; gap: 1.25rem; }
 @media (min-width: 56rem) { .cards { grid-template-columns: repeat(3, 1fr); } }
 
 .card {
+  --spot-x: 50%; --spot-y: -20%;
+  position: relative; isolation: isolate;
   display: flex; flex-direction: column; gap: 0.9rem;
-  padding: 1.6rem;
+  padding: 1.7rem;
   background: var(--surface-container-lo);
   border: 1px solid var(--outline-variant);
   border-radius: var(--r-xl);
   container-type: inline-size;
-  transition: background-color 180ms var(--ease), border-color 180ms var(--ease), transform 180ms var(--ease);
+  transition: border-color 260ms var(--ease), transform 320ms var(--ease-out),
+              box-shadow 320ms var(--ease);
 }
-.card:hover {
-  background: var(--surface-container);
-  border-color: var(--outline);
-  transform: translateY(-3px);
+.card::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; opacity: 0;
+  background: radial-gradient(22rem circle at var(--spot-x) var(--spot-y),
+              color-mix(in oklab, var(--primary) 16%, transparent), transparent 62%);
+  transition: opacity 320ms var(--ease);
 }
+.card:hover { transform: translateY(-5px); border-color: var(--outline); box-shadow: var(--shadow); }
+.card:hover::before { opacity: 1; }
+
 .card-top { display: flex; align-items: center; gap: 0.65rem; }
 .card h3 {
   font-family: var(--mono); font-size: 1.18rem; font-weight: 700;
-  font-variation-settings: normal; letter-spacing: -0.01em;
-  margin-right: auto;
+  font-variation-settings: normal; letter-spacing: -0.01em; margin-right: auto;
 }
-.card .role { color: var(--on-surface-variant); font-size: 0.94rem; flex: 1; }
+.card .role { color: var(--on-surface-variant); font-size: 0.94rem; }
 .card .role strong { color: var(--on-surface); font-weight: 600; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
   font-family: var(--mono); font-size: 0.7rem;
   padding: 0.28rem 0.6rem; border-radius: 999px;
-  border: 1px solid var(--outline-variant);
-  color: var(--on-surface-variant);
+  border: 1px solid var(--outline-variant); color: var(--on-surface-variant);
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
 }
+.card:hover .chip, .stack .chip:hover { border-color: var(--outline); color: var(--on-surface); }
 
-/* Wrap rather than scroll. A clipped install command reads as a broken card,
-   and a horizontal scrollbar inside a narrow column is worse: the reader has
-   no reason to suspect there is more text to find. */
 pre.cmd {
-  margin: 0; padding: 0.8rem 0.95rem;
-  background: var(--surface-container-hi);
-  border-radius: var(--r-s);
+  margin: 0; padding: 0.85rem 0.95rem;
+  background: var(--surface-container-hi); border-radius: var(--r-s);
   font-family: var(--mono); font-size: 0.78rem; line-height: 1.7;
   color: var(--on-surface);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre-wrap; overflow-wrap: anywhere;
 }
 pre.cmd .p { color: var(--on-surface-variant); user-select: none; }
-
 .card-links { display: flex; gap: 1rem; margin-top: auto; padding-top: 0.4rem; font-size: 0.9rem; font-weight: 600; }
 
 /* ── Work ───────────────────────────────────────────────────────────────── */
 .work { display: grid; gap: 1.25rem; }
 @media (min-width: 56rem) { .work { grid-template-columns: repeat(3, 1fr); } }
 .work-item {
-  padding: 1.5rem;
-  background: var(--surface-container-lo);
-  border-radius: var(--r-l);
-  border: 1px solid var(--outline-variant);
+  padding: 1.6rem; background: var(--surface-container-lo);
+  border-radius: var(--r-l); border: 1px solid var(--outline-variant);
+  transition: background-color 260ms var(--ease);
 }
-.work-item h3 { font-size: 1.1rem; margin-bottom: 0.6rem; }
+.work-item:hover { background: var(--surface-container); }
+.work-item h3 { font-size: 1.12rem; margin-bottom: 0.7rem; }
 .work-item p { color: var(--on-surface-variant); font-size: 0.95rem; }
 
 /* ── Stack ──────────────────────────────────────────────────────────────── */
-.stack { display: grid; gap: 1.75rem 3rem; }
+.stack { display: grid; gap: 1.9rem 3rem; }
 @media (min-width: 44rem) { .stack { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 70rem) { .stack { grid-template-columns: repeat(4, 1fr); } }
-.stack dt { margin-bottom: 0.7rem; }
+.stack dt { margin-bottom: 0.75rem; }
 .stack dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
-footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4rem; }
+footer {
+  position: relative; padding-block: clamp(4rem, 8vw, 6rem);
+  border-top: 1px solid var(--outline-variant);
+}
 .foot { display: flex; flex-wrap: wrap; gap: 2rem; align-items: end; }
-.foot .avail { max-width: 40ch; color: var(--on-surface-variant); margin-top: 0.9rem; }
+.foot h2 { font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.5rem); margin-top: 0.7rem; }
+.foot .avail { max-width: 42ch; color: var(--on-surface-variant); margin-top: 1rem; }
 .foot-links { display: flex; gap: 1.25rem; margin-left: auto; font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
-    animation-duration: 1ms !important;
-    animation-delay: 0ms !important;
-    transition-duration: 1ms !important;
+    animation-duration: 1ms !important; animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important; transition-duration: 1ms !important;
   }
-  .step { opacity: 1; transform: none; }
+  .word > i { transform: none; }
+  .fade-up { opacity: 1; transform: none; }
+  .step { opacity: 1; filter: none; transform: none; }
+  .verdict { opacity: 1; transform: none; }
   .card:hover { transform: none; }
+  .btn:hover { transform: none; }
 }
 </style>
 </head>
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"></div>
+<canvas id="field" aria-hidden="true"></canvas>
 
 <header class="bar">
   <div class="wrap bar-in">
@@ -479,52 +615,63 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
 </header>
 
 <main id="main">
-  <div id="top" class="hero">
-    <div class="wrap hero-grid">
-      <div>
-        <p class="eyebrow">Agent infrastructure · St. John's, Canada</p>
-        <h1>I build the agent infrastructure other engineers ship on.</h1>
-        <p class="lede">An agent can hold your instruction in its context and still not follow it.</p>
-        <p class="sub">
-          Holding a rule and applying one are different things, and the gap widens the longer a
-          session runs. So I stopped asking, and built enforcement that runs outside the model.
-          The panel beside this is the difference, and it is the same mechanism that ships in
-          Genesis.
-        </p>
-        <div class="cta-row">
-          <a class="btn btn-filled" href="#open-source">See the work</a>
-          <a class="btn btn-out" href="https://github.com/Atiqul-Islam">GitHub</a>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <p class="eyebrow">One agent, one rule</p>
-          <div class="seg" role="group" aria-label="Enforcement mode">
-            <button type="button" data-mode="prompted" aria-pressed="false">Prompted</button>
-            <button type="button" data-mode="enforced" aria-pressed="true">Enforced</button>
-          </div>
-        </div>
-
-        <ol class="steps" id="steps" aria-live="polite"></ol>
-        <div class="verdict" id="verdict"></div>
-      </div>
+  <div id="top" class="wrap hero">
+    <p class="eyebrow fade-up" style="animation-delay: 60ms"><span class="dot"></span>Agent infrastructure · St. John's, Canada</p>
+    <h1 id="h1">I build the agent infrastructure other engineers ship on.</h1>
+    <p class="lede fade-up" style="animation-delay: 500ms">
+      An agent can hold your instruction in its context and still not follow it.
+    </p>
+    <div class="cta-row fade-up" style="animation-delay: 600ms">
+      <a class="btn btn-filled" href="#open-source">See the work</a>
+      <a class="btn btn-out" href="https://github.com/Atiqul-Islam">GitHub</a>
     </div>
+    <div class="cue fade-up" style="animation-delay: 720ms"><span class="rail"></span>Scroll</div>
   </div>
 
-  <section id="open-source">
+  <section class="stage" aria-label="How enforcement works">
+    <div class="stage-track" id="track">
+      <div class="stage-sticky">
+        <div class="wrap stage-grid">
+          <div class="stage-copy">
+            <p class="eyebrow">One agent, one rule</p>
+            <h2>Holding a rule and applying one are different things.</h2>
+            <p>
+              The gap widens the longer a session runs, and from the outside you cannot tell which of
+              the two states you are in. So I stopped asking, and built enforcement that runs outside
+              the model. Keep scrolling and watch the same run go both ways.
+            </p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <p class="eyebrow">Run</p>
+              <div class="seg" role="group" aria-label="Enforcement mode">
+                <span class="thumb" aria-hidden="true"></span>
+                <button type="button" data-mode="prompted" aria-pressed="false">Prompted</button>
+                <button type="button" data-mode="enforced" aria-pressed="true">Enforced</button>
+              </div>
+            </div>
+            <ol class="steps" id="steps"></ol>
+            <div class="verdict" id="verdict"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="open-source">
     <div class="wrap">
-      <div class="sec-head">
+      <div class="sec-head reveal">
         <p class="eyebrow">Published, MIT, and readable</p>
         <h2>Three things you can run today</h2>
         <p>
-          Every claim on this page has code behind it. These are the three you can clone and
-          check yourself, with their real status rather than a launch adjective.
+          Every claim on this page has code behind it. These are the three you can clone and check
+          yourself, with their real status rather than a launch adjective.
         </p>
       </div>
 
       <div class="cards">
-        <article class="card">
+        <article class="card reveal">
           <div class="card-top">
             <h3>genesis</h3>
             <span class="tag tag-ok">Beta</span>
@@ -548,16 +695,16 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
           </div>
         </article>
 
-        <article class="card">
+        <article class="card reveal">
           <div class="card-top">
             <h3>graphcrew</h3>
             <span class="tag tag-ok">Beta</span>
           </div>
           <p class="role">
             <strong>LangGraph with the best practices already in place.</strong>
-            LangGraph gives you the graph. It does not decide how much context each agent gets,
-            when to evict a knowledge slot, or how to stop one tenant spending another tenant's
-            budget. GraphCrew ships those as defaults so you do not solve them again.
+            LangGraph gives you the graph. It does not decide how much context each agent gets, when
+            to evict a knowledge slot, or how to stop one tenant spending another tenant's budget.
+            GraphCrew ships those as defaults so you do not solve them again.
           </p>
           <div class="chips">
             <span class="chip">Python</span><span class="chip">Tiered slots</span>
@@ -571,7 +718,7 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
           </div>
         </article>
 
-        <article class="card">
+        <article class="card reveal">
           <div class="card-top">
             <h3>vocalize</h3>
             <span class="tag tag-warn">Active development</span>
@@ -579,8 +726,8 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
           <p class="role">
             <strong>Offline text to speech.</strong>
             ONNX Runtime and the Kokoro model in Rust, exposed to Python through PyO3. No network
-            call and no third party speech API. The work covers the inference path end to end,
-            from model loading and tokenisation through synthesis to the binding layer.
+            call and no third party speech API. The work covers the inference path end to end, from
+            model loading and tokenisation through synthesis to the binding layer.
           </p>
           <div class="chips">
             <span class="chip">Rust</span><span class="chip">ONNX Runtime</span>
@@ -594,9 +741,9 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
     </div>
   </section>
 
-  <section id="work">
+  <section class="band" id="work">
     <div class="wrap">
-      <div class="sec-head">
+      <div class="sec-head reveal">
         <p class="eyebrow">Instrumar · since 2022</p>
         <h2>What I own at work</h2>
         <p>
@@ -606,51 +753,50 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
       </div>
 
       <div class="work">
-        <div class="work-item">
+        <div class="work-item reveal">
           <h3>Non programmers shipping models</h3>
           <p>
-            I built a zero code workflow that lets analysts and systems engineers, people who do
-            not write code, build, validate and ship production models themselves. Some of the
-            models built through it run in production today. The rest are built and in testing.
-            The outcome is the point: domain experts ship without a developer in the loop.
+            I built a zero code workflow that lets analysts and systems engineers, people who do not
+            write code, build, validate and ship production models themselves. Some of the models
+            built through it run in production today. The rest are built and in testing. The outcome
+            is the point: domain experts ship without a developer in the loop.
           </p>
         </div>
-        <div class="work-item">
+        <div class="work-item reveal">
           <h3>The platform underneath</h3>
           <p>
-            A private Kubernetes cluster on Apache CloudStack, Cluster API, that I specified,
-            built and operate. Hardware, network architecture, deployment and production
-            operations, with GitOps delivery, automated promotion and rollback, and release
-            auditability. A parallel AWS cluster benchmarked cost against performance.
+            A private Kubernetes cluster on Apache CloudStack, Cluster API, that I specified, built
+            and operate. Hardware, network architecture, deployment and production operations, with
+            GitOps delivery, automated promotion and rollback, and release auditability. A parallel
+            AWS cluster benchmarked cost against performance.
           </p>
         </div>
-        <div class="work-item">
+        <div class="work-item reveal">
           <h3>Context engineering, in production</h3>
           <p>
             A production agentic analytics product for plant operations, full stack, with a
             supervisor routing four specialist agents on LangGraph. I engineered its context
-            management: knowledge modules loaded on demand instead of carried, a token budget
-            split so the stable prompt stays cached, and history compaction that keeps metadata
-            and drops payload until a result is actually needed.
+            management: knowledge modules loaded on demand instead of carried, a token budget split
+            so the stable prompt stays cached, and history compaction that keeps metadata and drops
+            payload until a result is actually needed.
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="stack">
+  <section class="band" id="stack">
     <div class="wrap">
-      <div class="sec-head">
+      <div class="sec-head reveal">
         <p class="eyebrow">What I reach for</p>
         <h2>Stack</h2>
       </div>
-      <dl class="stack">
+      <dl class="stack reveal">
         <div>
           <dt class="eyebrow">Languages</dt>
           <dd class="chips">
-            <span class="chip">Rust</span><span class="chip">Python</span>
-            <span class="chip">Go</span><span class="chip">TypeScript</span>
-            <span class="chip">C#</span>
+            <span class="chip">Rust</span><span class="chip">Python</span><span class="chip">Go</span>
+            <span class="chip">TypeScript</span><span class="chip">C#</span>
           </dd>
         </div>
         <div>
@@ -683,12 +829,10 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
 </main>
 
 <footer id="contact">
-  <div class="wrap foot">
+  <div class="wrap foot reveal">
     <div>
       <p class="eyebrow">Open to work</p>
-      <h2 style="font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.2rem); margin-top: 0.6rem;">
-        Remote anywhere, or on site in Canada.
-      </h2>
+      <h2>Remote anywhere, or on site in Canada.</h2>
       <p class="avail">
         Full time, contract or consulting. AI engineering, LLM engineering, MLOps and platform
         engineering. B.Eng Computer Engineering, Memorial University of Newfoundland.
@@ -704,74 +848,214 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
 <script>
 (() => {
   "use strict";
-
-  /* Theme toggle. Reads the resolved theme first so the first click always
-     flips what the reader is actually looking at, rather than assuming light. */
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const root = document.documentElement;
-  const toggle = document.getElementById("theme");
-  toggle.addEventListener("click", () => {
+
+  /* ── Headline: split into words so each can ride up behind its own clip ── */
+  const h1 = document.getElementById("h1");
+  if (h1 && !reduced.matches) {
+    const words = h1.textContent.trim().split(/\s+/);
+    h1.textContent = "";
+    words.forEach((w, i) => {
+      const outer = document.createElement("span");
+      outer.className = "word";
+      outer.style.setProperty("--w", i);
+      const inner = document.createElement("i");
+      inner.textContent = w;
+      outer.append(inner);
+      h1.append(outer, document.createTextNode(" "));
+    });
+  }
+
+  /* ── Theme ──────────────────────────────────────────────────────────────
+     Read the resolved theme first, so the first click always flips what the
+     reader is actually looking at rather than assuming the page starts light. */
+  document.getElementById("theme").addEventListener("click", () => {
     const dark = root.dataset.theme
       ? root.dataset.theme === "dark"
       : matchMedia("(prefers-color-scheme: dark)").matches;
     root.dataset.theme = dark ? "light" : "dark";
+    field.recolor();
   });
 
-  /* The enforcement panel.
+  /* ── Header hairline once the page has moved ────────────────────────────── */
+  const bar = document.querySelector("header.bar");
+  const sentinel = document.getElementById("top");
+  new IntersectionObserver(
+    ([e]) => bar.classList.toggle("stuck", !e.isIntersecting),
+    { rootMargin: "-64px 0px 0px 0px" }
+  ).observe(sentinel);
 
-     Both runs are the same agent under the same instruction. The only
+  /* ── The ambient field ──────────────────────────────────────────────────
+     A supervisor and its agents: one hub, a ring of workers, packets moving
+     along the spokes. It is the shape of the work rather than decoration.
+     Colours come from the same tokens as everything else, read back through
+     getComputedStyle so a theme switch recolours it. */
+  const field = (() => {
+    const cvs = document.getElementById("field");
+    const ctx = cvs.getContext("2d", { alpha: true });
+    let w = 0, h = 0, dpr = 1, nodes = [], pkts = [], hub = null, raf = 0, t = 0;
+    let colNode = "0 0 0", colEdge = "0 0 0", aN = 0.3, aE = 0.12, aP = 0.7;
+    let scrollY = 0;
+
+    function recolor() {
+      const cs = getComputedStyle(root);
+      colNode = cs.getPropertyValue("--viz-node").trim() || "47 111 94";
+      colEdge = cs.getPropertyValue("--viz-edge").trim() || "47 111 94";
+      aN = parseFloat(cs.getPropertyValue("--viz-alpha-node")) || 0.3;
+      aE = parseFloat(cs.getPropertyValue("--viz-alpha-edge")) || 0.12;
+      aP = parseFloat(cs.getPropertyValue("--viz-alpha-pkt")) || 0.7;
+    }
+
+    function layout() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      w = innerWidth; h = innerHeight;
+      cvs.width = Math.floor(w * dpr); cvs.height = Math.floor(h * dpr);
+      cvs.style.width = w + "px"; cvs.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const cx = w * 0.74, cy = h * 0.46;
+      hub = { x: cx, y: cy };
+      const count = w < 700 ? 5 : 7;
+      const R = Math.min(w, h) * (w < 700 ? 0.3 : 0.26);
+      nodes = Array.from({ length: count }, (_, i) => {
+        const a = (i / count) * Math.PI * 2 - Math.PI / 2;
+        return {
+          bx: cx + Math.cos(a) * R,
+          by: cy + Math.sin(a) * R,
+          x: 0, y: 0,
+          ph: i * 1.7,
+          r: i % 3 === 0 ? 3.4 : 2.4,
+          depth: 0.4 + (i % 3) * 0.22
+        };
+      });
+      // One packet per spoke, each starting at a different point of its trip.
+      pkts = nodes.map((_, i) => ({ i, p: i / count, sp: 0.0016 + (i % 4) * 0.0004, out: i % 2 === 0 }));
+    }
+
+    function paint() {
+      t += 1;
+      ctx.clearRect(0, 0, w, h);
+      const par = scrollY * 0.06;
+
+      nodes.forEach(n => {
+        n.x = n.bx + Math.sin((t * 0.004) + n.ph) * 9;
+        n.y = n.by + Math.cos((t * 0.0032) + n.ph) * 7 - par * n.depth;
+      });
+      const hy = hub.y - par * 0.5;
+
+      ctx.lineWidth = 1;
+      nodes.forEach(n => {
+        ctx.strokeStyle = `rgba(${colEdge.replace(/\s+/g, ",")},${aE})`;
+        ctx.beginPath(); ctx.moveTo(hub.x, hy); ctx.lineTo(n.x, n.y); ctx.stroke();
+      });
+
+      pkts.forEach(pk => {
+        pk.p += pk.sp;
+        if (pk.p > 1) { pk.p = 0; pk.out = !pk.out; }
+        const n = nodes[pk.i];
+        const e = pk.out ? pk.p : 1 - pk.p;
+        const x = hub.x + (n.x - hub.x) * e;
+        const y = hy + (n.y - hy) * e;
+        const fade = Math.sin(pk.p * Math.PI);
+        ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aP * fade})`;
+        ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+      });
+
+      nodes.forEach(n => {
+        ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aN})`;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
+      });
+
+      ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${Math.min(aN * 1.9, 0.9)})`;
+      ctx.beginPath(); ctx.arc(hub.x, hy, 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aE * 2.4})`;
+      ctx.beginPath(); ctx.arc(hub.x, hy, 11 + Math.sin(t * 0.02) * 2.5, 0, Math.PI * 2); ctx.stroke();
+
+    }
+
+    /* paint() renders exactly one frame; loop() is the only thing that
+       schedules another. Keeping them separate matters because setting
+       canvas.width clears the backing store, so every resize needs a repaint
+       even when no loop is running. Folding the scheduling into the draw call
+       made a resize wipe the field permanently under reduced motion. */
+    function loop() { paint(); raf = requestAnimationFrame(loop); }
+
+    function relayout() {
+      layout();
+      if (reduced.matches) paint();
+    }
+
+    function start() {
+      recolor(); layout();
+      cvs.classList.add("ready");
+      if (reduced.matches) { paint(); return; }
+      raf = requestAnimationFrame(loop);
+    }
+
+    addEventListener("resize", relayout, { passive: true });
+    // Stop burning frames when the tab is not being looked at.
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cancelAnimationFrame(raf);
+      else if (!reduced.matches) raf = requestAnimationFrame(loop);
+    });
+
+    return { start, recolor, setScroll: y => { scrollY = y; } };
+  })();
+  field.start();
+
+  /* ── The run, advanced by scrolling ─────────────────────────────────────
+     Both modes are the same agent under the same instruction. The only
      difference is whether the rule is asked for or enforced, which is the
-     entire argument the page is making. */
+     whole argument the page is making. */
   const RUNS = {
     prompted: {
       steps: [
-        { what: "read  portfolio-truth.md", tag: "ok",   cls: "tag-ok" },
-        { what: "rule pt-3 in context",     tag: "held", cls: "tag-ok" },
-        { what: "… 40 turns later …",       tag: "",     cls: "", drift: true },
+        { what: "read  portfolio-truth.md", tag: "ok",    cls: "tag-ok" },
+        { what: "rule pt-3 in context",     tag: "held",  cls: "tag-ok" },
+        { what: "… 40 turns later …",       tag: "",      cls: "", drift: true },
         { what: "write resume.md",          tag: "wrote", cls: "tag-warn" }
       ],
-      verdict: {
-        cls: "bad",
-        html: "<strong>Shipped without the status label.</strong> The rule was in context the whole time. Nothing checked whether it was applied, so nothing said otherwise."
-      }
+      verdict: { cls: "bad", html: "<strong>Shipped without the status label.</strong> The rule sat in context the whole time. Nothing checked whether it was applied, so nothing said otherwise." }
     },
     enforced: {
       steps: [
-        { what: "inject pt-3 before work",  tag: "hook", cls: "tag-ok" },
-        { what: "rule pt-3 in context",     tag: "held", cls: "tag-ok" },
-        { what: "… 40 turns later …",       tag: "",     cls: "", drift: true },
-        { what: "write resume.md",          tag: "denied", cls: "tag-deny", deny: true },
-        { what: "cite pt-3 + evidence",     tag: "pass", cls: "tag-ok" }
+        { what: "inject pt-3 before work", tag: "hook",   cls: "tag-ok" },
+        { what: "rule pt-3 in context",    tag: "held",   cls: "tag-ok" },
+        { what: "… 40 turns later …",      tag: "",       cls: "", drift: true },
+        { what: "write resume.md",         tag: "denied", cls: "tag-deny", deny: true },
+        { what: "cite pt-3 + evidence",    tag: "pass",   cls: "tag-ok" }
       ],
-      verdict: {
-        cls: "ok",
-        html: "<strong>The write was denied, not discouraged.</strong> A fail closed hook ran outside the model, and the agent could not finish until it cited the rule it applied with evidence."
-      }
+      verdict: { cls: "ok", html: "<strong>The write was denied, not discouraged.</strong> A fail closed hook ran outside the model, and the agent could not finish until it cited the rule it applied with evidence." }
     }
   };
 
   const list = document.getElementById("steps");
   const verdict = document.getElementById("verdict");
+  const track = document.getElementById("track");
   const buttons = [...document.querySelectorAll(".seg button")];
+  const thumb = document.querySelector(".seg .thumb");
+  let mode = "enforced", shown = -1;
 
-  function render(mode) {
+  function moveThumb() {
+    const active = buttons.find(b => b.dataset.mode === mode);
+    thumb.style.width = active.offsetWidth + "px";
+    thumb.style.translate = (active.offsetLeft - 3) + "px 0";
+  }
+
+  function build() {
     const run = RUNS[mode];
     list.replaceChildren();
-
     run.steps.forEach((s, i) => {
       const li = document.createElement("li");
       li.className = "step" + (s.deny ? " is-deny" : "") + (s.drift ? " is-drift" : "");
-      li.style.setProperty("--i", i);
-
       const n = document.createElement("span");
       n.className = "n";
       n.textContent = s.drift ? "" : String(i + 1).padStart(2, "0");
-
       const what = document.createElement("span");
       what.className = "what";
       what.textContent = s.what;
-
       li.append(n, what);
-
       if (s.tag) {
         const tag = document.createElement("span");
         tag.className = "tag " + s.cls;
@@ -780,15 +1064,53 @@ footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4re
       }
       list.append(li);
     });
-
     verdict.className = "verdict " + run.verdict.cls;
     verdict.innerHTML = run.verdict.html;
-
+    shown = -1;
     buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+    moveThumb();
+    if (reduced.matches) reveal(RUNS[mode].steps.length);
   }
 
-  buttons.forEach(b => b.addEventListener("click", () => render(b.dataset.mode)));
-  render("enforced");
+  function reveal(upTo) {
+    if (upTo === shown) return;
+    shown = upTo;
+    const items = [...list.children];
+    items.forEach((li, i) => li.classList.toggle("on", i < upTo));
+    verdict.classList.toggle("on", upTo >= items.length);
+  }
+
+  /* Scroll position through the tall track decides how far the run has got,
+     so the reader advances it themselves instead of watching a canned loop. */
+  let ticking = false;
+  function onScroll() {
+    field.setScroll(scrollY);
+    if (ticking || reduced.matches) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const r = track.getBoundingClientRect();
+      const total = r.height - innerHeight;
+      if (total <= 0) return;
+      const p = Math.min(Math.max(-r.top / total, 0), 1);
+      const n = RUNS[mode].steps.length;
+      // The last slice of the track is spent on the verdict, so it lands
+      // after the final step rather than at the same instant.
+      reveal(Math.round(Math.min(p / 0.86, 1) * (n + 1)));
+    });
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", () => { moveThumb(); onScroll(); }, { passive: true });
+
+  buttons.forEach(b => b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    const run = () => { build(); onScroll(); };
+    if (document.startViewTransition && !reduced.matches) document.startViewTransition(run);
+    else run();
+  }));
+
+  build();
+  onScroll();
 })();
 </script>
 </body>
