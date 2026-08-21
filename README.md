@@ -3,6 +3,8 @@
   <img alt="Atiqul Islam. I build the agent infrastructure other engineers ship on. Projects: genesis (beta), graphcrew (beta), vocalize (active development)." src="assets/banner-light.svg">
 </picture>
 
+### [atiqul-islam.github.io/Atiqul-Islam](https://atiqul-islam.github.io/Atiqul-Islam/)
+
 I build agent systems and the infrastructure they run on, and I take them to production rather than
 to a demo. Backend, orchestration, the platform underneath, and the tooling that makes the work
 repeatable.
