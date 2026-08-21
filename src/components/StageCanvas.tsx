@@ -483,10 +483,18 @@ export default function StageCanvas() {
         ctx.clearRect(0, 0, w, h);
         lattice(p);
 
+        /* Derive the scene box from the same geometry the copy uses, rather
+           than from magic fractions of the viewport. Fractions put the scene
+           6px from the copy panel and 14px from the window edge at 1440, which
+           is what made it feel like it was pushing against both. */
         const narrow = w < 1024;
-        const boxW = narrow ? w * 0.94 : w * 0.52;
-        const scale = Math.min(boxW / SW, (h * 0.8) / SH);
-        const ox = narrow ? (w - SW * scale) / 2 : w * 0.47 + (w * 0.52 - SW * scale) / 2;
+        const wrapW = Math.min(w - 40, 1184);
+        const wrapLeft = (w - wrapW) / 2;
+        const copyW = Math.min(544, wrapW * 0.5);
+        const sceneLeft = wrapLeft + copyW + 76;
+        const boxW = narrow ? w * 0.9 : Math.max(wrapLeft + wrapW - sceneLeft, 300);
+        const scale = Math.min(boxW / SW, (h * 0.72) / SH);
+        const ox = narrow ? (w - SW * scale) / 2 : sceneLeft + (boxW - SW * scale) / 2;
         const oy = (h - SH * scale) / 2;
 
         ctx.save();
