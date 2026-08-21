@@ -159,7 +159,7 @@ body {
   line-height: 1.62;
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1, h2, h3, .display {
@@ -186,16 +186,16 @@ a:hover { text-decoration-thickness: 2px; }
 .wrap { width: min(100% - var(--gutter) * 2, 74rem); margin-inline: auto; }
 
 /* ── The ambient field ───────────────────────────────────────────────────
-   A supervisor routing agents is the shape of nearly everything on this
-   page, so the background draws that rather than abstract noise: a hub, its
-   spokes, and packets moving along them. It parallaxes against scroll and
-   stops entirely when the reader asks for reduced motion. */
+   Two depth planes drawn on a canvas: a far lattice and a set of near orbs,
+   each travelling at its own fraction of the scroll. It sits behind the
+   content and stays out of its way, and it stops entirely when the reader
+   asks for reduced motion. */
 #field {
   position: fixed; inset: 0;
   z-index: -1; pointer-events: none;
   opacity: 0; transition: opacity 900ms var(--ease);
-  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 74% 44%, #000 26%, transparent 76%);
-          mask-image: radial-gradient(ellipse 62% 58% at 74% 44%, #000 26%, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse 120% 100% at 50% 30%, #000 45%, transparent 95%);
+          mask-image: radial-gradient(ellipse 120% 100% at 50% 30%, #000 45%, transparent 95%);
 }
 #field.ready { opacity: 1; }
 
@@ -273,10 +273,18 @@ nav.links a:hover::after { transform: scaleX(1); }
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
-  min-block-size: clamp(38rem, 92svh, 56rem);
-  display: grid; align-content: center;
-  padding-block: 4rem 6rem; position: relative;
+  padding-block: clamp(3.5rem, 8vw, 6rem) clamp(3rem, 7vw, 5.5rem);
+  position: relative;
+  will-change: transform, opacity;
 }
+.hero-grid {
+  display: grid; grid-template-columns: 1fr;
+  gap: clamp(2.5rem, 5vw, 4rem); align-items: start;
+}
+@media (min-width: 62rem) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 27rem); }
+}
+.hero .sub { margin-top: 1.5rem; max-width: 52ch; color: var(--on-surface-variant); }
 .eyebrow {
   font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
   letter-spacing: 0.14em; text-transform: uppercase;
@@ -293,9 +301,9 @@ nav.links a:hover::after { transform: scaleX(1); }
 }
 
 h1 {
-  font-size: clamp(2.3rem, 1.35rem + 3.5vw, 4.6rem);
+  font-size: clamp(2.15rem, 1.5rem + 2.5vw, 3.55rem);
   font-variation-settings: "wdth" 122;
-  max-width: 19ch; margin-block: 1rem 0;
+  max-width: 17ch; margin-block: 0.8rem 0;
 }
 /* Word-level reveal. Each word rides up from behind its own clip, which
    reads as the sentence assembling rather than the block fading in. */
@@ -359,21 +367,6 @@ h1 {
 }
 @keyframes rail { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
 
-/* ── The scroll stage: the argument, told by scrolling ───────────────────
-   A tall track with a sticky panel inside it. Scroll position through the
-   track drives which step is revealed, so the reader advances the run
-   themselves instead of watching a canned loop. */
-.stage { position: relative; }
-.stage-track { block-size: 340svh; position: relative; }
-.stage-sticky {
-  position: sticky; top: 0; block-size: 100svh;
-  display: grid; align-content: center;
-}
-.stage-grid { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
-@media (min-width: 62rem) { .stage-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); } }
-
-.stage-copy h2 { font-size: clamp(1.8rem, 1.3rem + 2vw, 3rem); margin-block: 0.7rem 0; }
-.stage-copy p { color: var(--on-surface-variant); margin-top: 1.1rem; max-width: 44ch; }
 
 .panel {
   background: color-mix(in oklab, var(--surface-container-lo) 88%, transparent);
@@ -416,13 +409,14 @@ h1 {
   border-radius: var(--r-m);
   font-family: var(--mono); font-size: 0.8rem;
   color: var(--on-surface-variant);
-  opacity: 0.28; filter: blur(1px);
-  transform: translateY(4px) scale(0.985);
-  transition: opacity 420ms var(--ease-out), transform 420ms var(--ease-out),
-              filter 420ms var(--ease-out), border-color 300ms var(--ease),
-              background-color 300ms var(--ease);
+  transition: border-color 300ms var(--ease), background-color 300ms var(--ease);
 }
-.step.on { opacity: 1; filter: none; transform: none; }
+.js .step {
+  opacity: 0; transform: translateY(7px);
+  animation: step-in 420ms var(--ease-out) forwards;
+  animation-delay: calc(var(--i) * 95ms + 380ms);
+}
+@keyframes step-in { to { opacity: 1; transform: none; } }
 .step .n { color: var(--outline); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
 .step .what { color: var(--on-surface); overflow-wrap: anywhere; }
 
@@ -435,7 +429,7 @@ h1 {
 .tag-deny { background: var(--deny-container);     color: var(--on-deny-container); }
 .tag-warn { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 
-.step.is-deny.on {
+.step.is-deny {
   border-color: color-mix(in oklab, var(--deny) 55%, var(--outline-variant));
   background: color-mix(in oklab, var(--deny) 7%, var(--surface));
   animation: jolt 460ms var(--ease-out);
@@ -449,10 +443,12 @@ h1 {
 .verdict {
   margin-top: 1rem; padding: 0.95rem 1.05rem; border-radius: var(--r-m);
   font-size: 0.9rem; line-height: 1.5;
-  opacity: 0; transform: translateY(8px);
-  transition: opacity 460ms var(--ease-out), transform 460ms var(--ease-out);
 }
-.verdict.on { opacity: 1; transform: none; }
+.js .verdict {
+  opacity: 0; transform: translateY(8px);
+  animation: step-in 460ms var(--ease-out) forwards;
+  animation-delay: var(--vd, 800ms);
+}
 .verdict.ok  { background: var(--primary-container);  color: var(--on-primary-container); }
 .verdict.bad { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 .verdict strong { font-variation-settings: "wdth" 112; }
@@ -577,6 +573,50 @@ footer {
 .foot .avail { max-width: 42ch; color: var(--on-surface-variant); margin-top: 1rem; }
 .foot-links { display: flex; gap: 1.25rem; margin-left: auto; font-weight: 600; }
 
+
+/* ── The vista: a parallax band in the middle of the document ────────────
+   Three layers over one statement, each travelling at its own rate as the
+   band crosses the viewport. Depth comes from the disagreement between the
+   rates, so the back mark drifts, the statement holds, and the caption
+   overtakes. Transform only, so none of it costs layout. */
+.vista {
+  position: relative;
+  overflow: clip;
+  min-block-size: clamp(28rem, 62svh, 40rem);
+  display: grid; align-content: center;
+  background: var(--surface-container-lo);
+  border-block: 1px solid var(--outline-variant);
+}
+.vista-mark {
+  position: absolute; inset-block-start: 50%; inset-inline: 0;
+  text-align: center; pointer-events: none; user-select: none;
+  font-variation-settings: "wdth" 125; font-weight: 800;
+  font-size: clamp(3rem, 11.5vw, 9.5rem); line-height: 0.8;
+  letter-spacing: -0.05em; white-space: nowrap;
+  color: color-mix(in oklab, var(--primary) 11%, transparent);
+  translate: 0 -50%;
+  will-change: transform;
+}
+.vista-inner { position: relative; }
+.vista-inner h2 {
+  font-size: clamp(1.9rem, 1.3rem + 2.4vw, 3.4rem);
+  max-width: 22ch; will-change: transform;
+}
+.vista-cap {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-top: 1.75rem; will-change: transform;
+}
+.vista-cap span {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--on-surface-variant);
+  border: 1px solid var(--outline-variant); border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: color-mix(in oklab, var(--surface) 70%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vista-mark, .vista-inner h2, .vista-cap { transform: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
@@ -585,8 +625,7 @@ footer {
   }
   .word > i { transform: none; }
   .fade-up { opacity: 1; transform: none; }
-  .step { opacity: 1; filter: none; transform: none; }
-  .verdict { opacity: 1; transform: none; }
+  .js .step, .js .verdict { opacity: 1; transform: none; }
   .card:hover { transform: none; }
   .btn:hover { transform: none; }
 }
@@ -616,48 +655,39 @@ footer {
 
 <main id="main">
   <div id="top" class="wrap hero">
-    <p class="eyebrow fade-up" style="animation-delay: 60ms"><span class="dot"></span>Agent infrastructure · St. John's, Canada</p>
-    <h1 id="h1">I build the agent infrastructure other engineers ship on.</h1>
-    <p class="lede fade-up" style="animation-delay: 500ms">
-      An agent can hold your instruction in its context and still not follow it.
-    </p>
-    <div class="cta-row fade-up" style="animation-delay: 600ms">
-      <a class="btn btn-filled" href="#open-source">See the work</a>
-      <a class="btn btn-out" href="https://github.com/Atiqul-Islam">GitHub</a>
-    </div>
-    <div class="cue fade-up" style="animation-delay: 720ms"><span class="rail"></span>Scroll</div>
-  </div>
-
-  <section class="stage" aria-label="How enforcement works">
-    <div class="stage-track" id="track">
-      <div class="stage-sticky">
-        <div class="wrap stage-grid">
-          <div class="stage-copy">
-            <p class="eyebrow">One agent, one rule</p>
-            <h2>Holding a rule and applying one are different things.</h2>
-            <p>
-              The gap widens the longer a session runs, and from the outside you cannot tell which of
-              the two states you are in. So I stopped asking, and built enforcement that runs outside
-              the model. Keep scrolling and watch the same run go both ways.
-            </p>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <p class="eyebrow">Run</p>
-              <div class="seg" role="group" aria-label="Enforcement mode">
-                <span class="thumb" aria-hidden="true"></span>
-                <button type="button" data-mode="prompted" aria-pressed="false">Prompted</button>
-                <button type="button" data-mode="enforced" aria-pressed="true">Enforced</button>
-              </div>
-            </div>
-            <ol class="steps" id="steps"></ol>
-            <div class="verdict" id="verdict"></div>
-          </div>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow fade-up" style="animation-delay: 60ms"><span class="dot"></span>Agent infrastructure · St. John's, Canada</p>
+        <h1 id="h1">I build the agent infrastructure other engineers ship on.</h1>
+        <p class="lede fade-up" style="animation-delay: 500ms">
+          An agent can hold your instruction in its context and still not follow it.
+        </p>
+        <p class="sub fade-up" style="animation-delay: 580ms">
+          Holding a rule and applying one are different things, and the gap widens the longer a
+          session runs. So I stopped asking, and built enforcement that runs outside the model.
+          The panel beside this is the difference, and it is the same mechanism that ships in
+          Genesis.
+        </p>
+        <div class="cta-row fade-up" style="animation-delay: 660ms">
+          <a class="btn btn-filled" href="#open-source">See the work</a>
+          <a class="btn btn-out" href="https://github.com/Atiqul-Islam">GitHub</a>
         </div>
       </div>
+
+      <div class="panel fade-up" style="animation-delay: 300ms">
+        <div class="panel-head">
+          <p class="eyebrow">One agent, one rule</p>
+          <div class="seg" role="group" aria-label="Enforcement mode">
+            <span class="thumb" aria-hidden="true"></span>
+            <button type="button" data-mode="prompted" aria-pressed="false">Prompted</button>
+            <button type="button" data-mode="enforced" aria-pressed="true">Enforced</button>
+          </div>
+        </div>
+        <ol class="steps" id="steps" aria-live="polite"></ol>
+        <div class="verdict" id="verdict"></div>
+      </div>
     </div>
-  </section>
+  </div>
 
   <section class="band" id="open-source">
     <div class="wrap">
@@ -737,6 +767,19 @@ footer {
             <a href="https://github.com/Atiqul-Islam/vocalize">Code</a>
           </div>
         </article>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="band vista" id="vista" aria-label="How I work">
+    <div class="vista-mark" aria-hidden="true" data-rate="-0.16">DETERMINISTIC</div>
+    <div class="wrap vista-inner">
+      <p class="eyebrow">The through line</p>
+      <h2 data-rate="0.07">A senior engineer who built the tooling, and uses it under his own judgment.</h2>
+      <div class="vista-cap" data-rate="0.20">
+        <span>Rules with IDs</span><span>Checks outside the model</span>
+        <span>Evidence, not assertion</span><span>Status labels that are true</span>
       </div>
     </div>
   </section>
@@ -887,104 +930,91 @@ footer {
   ).observe(sentinel);
 
   /* ── The ambient field ──────────────────────────────────────────────────
-     A supervisor and its agents: one hub, a ring of workers, packets moving
-     along the spokes. It is the shape of the work rather than decoration.
-     Colours come from the same tokens as everything else, read back through
-     getComputedStyle so a theme switch recolours it. */
+     Two depth planes on a canvas, drawn behind everything: a far lattice and
+     a set of near orbs. Colours are read back from the same tokens through
+     getComputedStyle, so the theme toggle recolours the field with the page. */
   const field = (() => {
     const cvs = document.getElementById("field");
     const ctx = cvs.getContext("2d", { alpha: true });
-    let w = 0, h = 0, dpr = 1, nodes = [], pkts = [], hub = null, raf = 0, t = 0;
-    let colNode = "0 0 0", colEdge = "0 0 0", aN = 0.3, aE = 0.12, aP = 0.7;
-    let scrollY = 0;
+    let w = 0, h = 0, raf = 0, t = 0, scrollY = 0;
+    let col = "47 111 94", aN = 0.3, aE = 0.13, aP = 0.72;
+
+    /* Each plane travels at its own fraction of the scroll. That difference
+       in rate is the whole parallax effect: one layer moving with the page
+       reads as a static image no matter how fast it moves, because nothing
+       disagrees with it. Far barely drifts, near overtakes the content. */
+    const PLANES = { far: 0.12, near: 0.62 };
+
+    let grid = [], orbs = [];
 
     function recolor() {
-      const cs = getComputedStyle(root);
-      colNode = cs.getPropertyValue("--viz-node").trim() || "47 111 94";
-      colEdge = cs.getPropertyValue("--viz-edge").trim() || "47 111 94";
+      const cs = getComputedStyle(document.documentElement);
+      col = (cs.getPropertyValue("--viz-node").trim() || "47 111 94").replace(/\s+/g, ",");
       aN = parseFloat(cs.getPropertyValue("--viz-alpha-node")) || 0.3;
-      aE = parseFloat(cs.getPropertyValue("--viz-alpha-edge")) || 0.12;
-      aP = parseFloat(cs.getPropertyValue("--viz-alpha-pkt")) || 0.7;
+      aE = parseFloat(cs.getPropertyValue("--viz-alpha-edge")) || 0.13;
+      aP = parseFloat(cs.getPropertyValue("--viz-alpha-pkt")) || 0.72;
     }
 
+    const rgba = a => `rgba(${col},${a})`;
+
     function layout() {
-      dpr = Math.min(devicePixelRatio || 1, 2);
+      const dpr = Math.min(devicePixelRatio || 1, 2);
       w = innerWidth; h = innerHeight;
       cvs.width = Math.floor(w * dpr); cvs.height = Math.floor(h * dpr);
       cvs.style.width = w + "px"; cvs.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const cx = w * 0.74, cy = h * 0.46;
-      hub = { x: cx, y: cy };
-      const count = w < 700 ? 5 : 7;
-      const R = Math.min(w, h) * (w < 700 ? 0.3 : 0.26);
-      nodes = Array.from({ length: count }, (_, i) => {
-        const a = (i / count) * Math.PI * 2 - Math.PI / 2;
-        return {
-          bx: cx + Math.cos(a) * R,
-          by: cy + Math.sin(a) * R,
-          x: 0, y: 0,
-          ph: i * 1.7,
-          r: i % 3 === 0 ? 3.4 : 2.4,
-          depth: 0.4 + (i % 3) * 0.22
-        };
-      });
-      // One packet per spoke, each starting at a different point of its trip.
-      pkts = nodes.map((_, i) => ({ i, p: i / count, sp: 0.0016 + (i % 4) * 0.0004, out: i % 2 === 0 }));
+      // FAR: a lattice of dots, tall enough to wrap seamlessly as it drifts.
+      const step = w < 700 ? 56 : 74;
+      grid = [];
+      for (let x = step / 2; x < w + step; x += step)
+        for (let y = 0; y < h * 2 + step; y += step)
+          grid.push({ x, y });
+      grid.gridH = h * 2 + step;
+
+      // NEAR: a few large soft orbs. They travel fastest, so they are what
+      // the eye reads the depth from. They move fastest, so they are what the
+      // eye reads the depth from.
+      orbs = [
+        { x: w * 0.16, y: h * 0.30, r: Math.min(w, h) * 0.30 },
+        { x: w * 0.88, y: h * 0.78, r: Math.min(w, h) * 0.24 },
+        { x: w * 0.52, y: h * 1.15, r: Math.min(w, h) * 0.20 }
+      ];
     }
 
     function paint() {
       t += 1;
       ctx.clearRect(0, 0, w, h);
-      const par = scrollY * 0.06;
 
-      nodes.forEach(n => {
-        n.x = n.bx + Math.sin((t * 0.004) + n.ph) * 9;
-        n.y = n.by + Math.cos((t * 0.0032) + n.ph) * 7 - par * n.depth;
-      });
-      const hy = hub.y - par * 0.5;
+      // ── FAR plane ──────────────────────────────────────────────────────
+      const gOff = (scrollY * PLANES.far) % grid.gridH;
+      ctx.fillStyle = rgba(aE * 0.85);
+      for (const g of grid) {
+        let y = g.y - gOff;
+        if (y < -20) y += grid.gridH;
+        if (y > h + 20) continue;
+        ctx.beginPath(); ctx.arc(g.x, y, 1.1, 0, Math.PI * 2); ctx.fill();
+      }
 
-      ctx.lineWidth = 1;
-      nodes.forEach(n => {
-        ctx.strokeStyle = `rgba(${colEdge.replace(/\s+/g, ",")},${aE})`;
-        ctx.beginPath(); ctx.moveTo(hub.x, hy); ctx.lineTo(n.x, n.y); ctx.stroke();
-      });
-
-      pkts.forEach(pk => {
-        pk.p += pk.sp;
-        if (pk.p > 1) { pk.p = 0; pk.out = !pk.out; }
-        const n = nodes[pk.i];
-        const e = pk.out ? pk.p : 1 - pk.p;
-        const x = hub.x + (n.x - hub.x) * e;
-        const y = hy + (n.y - hy) * e;
-        const fade = Math.sin(pk.p * Math.PI);
-        ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aP * fade})`;
-        ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
-      });
-
-      nodes.forEach(n => {
-        ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aN})`;
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fill();
-      });
-
-      ctx.fillStyle = `rgba(${colNode.replace(/\s+/g, ",")},${Math.min(aN * 1.9, 0.9)})`;
-      ctx.beginPath(); ctx.arc(hub.x, hy, 5.5, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = `rgba(${colNode.replace(/\s+/g, ",")},${aE * 2.4})`;
-      ctx.beginPath(); ctx.arc(hub.x, hy, 11 + Math.sin(t * 0.02) * 2.5, 0, Math.PI * 2); ctx.stroke();
+      // ── NEAR plane, behind the subject but moving fastest ──────────────
+      const nOff = scrollY * PLANES.near;
+      for (const o of orbs) {
+        const y = o.y - nOff * 0.5;
+        if (y < -o.r || y > h + o.r) continue;
+        const g = ctx.createRadialGradient(o.x, y, 0, o.x, y, o.r);
+        g.addColorStop(0, rgba(aE * 0.55));
+        g.addColorStop(1, rgba(0));
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(o.x, y, o.r, 0, Math.PI * 2); ctx.fill();
+      }
 
     }
 
     /* paint() renders exactly one frame; loop() is the only thing that
-       schedules another. Keeping them separate matters because setting
-       canvas.width clears the backing store, so every resize needs a repaint
-       even when no loop is running. Folding the scheduling into the draw call
-       made a resize wipe the field permanently under reduced motion. */
+       schedules another. Setting canvas.width clears the backing store, so a
+       resize needs a repaint even when no loop is running. */
     function loop() { paint(); raf = requestAnimationFrame(loop); }
-
-    function relayout() {
-      layout();
-      if (reduced.matches) paint();
-    }
+    function relayout() { layout(); if (reduced.matches) paint(); }
 
     function start() {
       recolor(); layout();
@@ -994,13 +1024,15 @@ footer {
     }
 
     addEventListener("resize", relayout, { passive: true });
-    // Stop burning frames when the tab is not being looked at.
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) cancelAnimationFrame(raf);
       else if (!reduced.matches) raf = requestAnimationFrame(loop);
     });
 
-    return { start, recolor, setScroll: y => { scrollY = y; } };
+    return {
+      start, recolor, paint,
+      setScroll(y) { scrollY = y; if (reduced.matches) return; }
+    };
   })();
   field.start();
 
@@ -1032,10 +1064,9 @@ footer {
 
   const list = document.getElementById("steps");
   const verdict = document.getElementById("verdict");
-  const track = document.getElementById("track");
   const buttons = [...document.querySelectorAll(".seg button")];
   const thumb = document.querySelector(".seg .thumb");
-  let mode = "enforced", shown = -1;
+  let mode = "enforced";
 
   function moveThumb() {
     const active = buttons.find(b => b.dataset.mode === mode);
@@ -1055,6 +1086,7 @@ footer {
       const what = document.createElement("span");
       what.className = "what";
       what.textContent = s.what;
+      li.style.setProperty("--i", i);
       li.append(n, what);
       if (s.tag) {
         const tag = document.createElement("span");
@@ -1066,37 +1098,59 @@ footer {
     });
     verdict.className = "verdict " + run.verdict.cls;
     verdict.innerHTML = run.verdict.html;
-    shown = -1;
+    // The verdict waits for the last step rather than landing with it.
+    verdict.style.setProperty("--vd", (run.steps.length * 95 + 520) + "ms");
     buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
     moveThumb();
-    if (reduced.matches) reveal(RUNS[mode].steps.length);
   }
 
-  function reveal(upTo) {
-    if (upTo === shown) return;
-    shown = upTo;
-    const items = [...list.children];
-    items.forEach((li, i) => li.classList.toggle("on", i < upTo));
-    verdict.classList.toggle("on", upTo >= items.length);
+  /* Vista parallax. Each layer's offset is driven by how far the band has
+     crossed the viewport, not by absolute scroll, so the effect is centred on
+     the band wherever it happens to sit. A negative rate sends the back mark
+     against the scroll, which reads as further away than merely slower. */
+  const vista = document.getElementById("vista");
+  const vistaLayers = [...vista.querySelectorAll("[data-rate]")].map(el => ({
+    el, rate: parseFloat(el.dataset.rate)
+  }));
+  function vistaParallax() {
+    if (reduced.matches) return;
+    const r = vista.getBoundingClientRect();
+    if (r.bottom < -200 || r.top > innerHeight + 200) return;
+    // -1 entering from below, 0 centred, 1 leaving above.
+    const centred = (innerHeight / 2 - (r.top + r.height / 2)) / (innerHeight / 2 + r.height / 2);
+    for (const l of vistaLayers) {
+      l.el.style.transform = `translate3d(0, ${(centred * l.rate * r.height).toFixed(1)}px, 0)`;
+    }
   }
 
-  /* Scroll position through the tall track decides how far the run has got,
-     so the reader advances it themselves instead of watching a canned loop. */
+  /* Hero parallax. The hero leaves at 0.42 of the scroll while the field's mid
+     plane leaves at 0.34 and its near plane at 0.70, so three things travel
+     past each other at once. Transform and opacity only, both compositor
+     properties, so none of this costs layout.
+
+     The travel is clamped to one viewport. Left uncapped it followed the
+     reader down the whole page as a ghost sitting over the content. */
+  const heroEl = document.getElementById("top");
+  function heroParallax(y) {
+    if (reduced.matches) return;
+    const vh = innerHeight;
+    const p = Math.min(y / vh, 1);
+    heroEl.style.transform = `translate3d(0, ${(Math.min(y, vh) * 0.42).toFixed(1)}px, 0)`;
+    heroEl.style.opacity = String(1 - p);
+    // Fully faded means it should stop painting and stop taking hit tests too.
+    heroEl.style.visibility = p >= 1 ? "hidden" : "visible";
+  }
+
+
   let ticking = false;
   function onScroll() {
-    field.setScroll(scrollY);
-    if (ticking || reduced.matches) return;
+    if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
       ticking = false;
-      const r = track.getBoundingClientRect();
-      const total = r.height - innerHeight;
-      if (total <= 0) return;
-      const p = Math.min(Math.max(-r.top / total, 0), 1);
-      const n = RUNS[mode].steps.length;
-      // The last slice of the track is spent on the verdict, so it lands
-      // after the final step rather than at the same instant.
-      reveal(Math.round(Math.min(p / 0.86, 1) * (n + 1)));
+      field.setScroll(scrollY);
+      heroParallax(scrollY);
+      vistaParallax();
     });
   }
   addEventListener("scroll", onScroll, { passive: true });
@@ -1104,9 +1158,8 @@ footer {
 
   buttons.forEach(b => b.addEventListener("click", () => {
     mode = b.dataset.mode;
-    const run = () => { build(); onScroll(); };
-    if (document.startViewTransition && !reduced.matches) document.startViewTransition(run);
-    else run();
+    if (document.startViewTransition && !reduced.matches) document.startViewTransition(build);
+    else build();
   }));
 
   build();
