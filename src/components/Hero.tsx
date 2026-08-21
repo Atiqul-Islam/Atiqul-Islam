@@ -58,8 +58,8 @@ Software Developer at Instrumar · St. John&apos;s, Canada
         </p>
 
         <p data-hero-fade className="mt-5 max-w-[52ch] text-ink-dim">
-          Embedded C to orbit, a Kubernetes platform I own end to end, and agent infrastructure
-          other engineers install. Open to remote work anywhere.
+          Embedded C to orbit, a private Kubernetes platform I built and ran from the hardware
+          up, and agent infrastructure other engineers install. Open to remote work anywhere.
         </p>
 
         <div data-hero-fade className="mt-9 flex flex-wrap gap-3">

@@ -229,7 +229,7 @@ export const CAPABILITIES = [
   },
   {
     title: "Platform and MLOps",
-    body: "A private Kubernetes cluster I specified and built, hardware through to operations.",
+    body: "Kubernetes on Apache CloudStack, specified and built from the hardware up and run in production.",
   },
   {
     title: "Full stack product",
