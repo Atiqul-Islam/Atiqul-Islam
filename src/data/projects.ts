@@ -83,19 +83,19 @@ export const ACTS = [
   {
     id: "act-terminal",
     label: "01",
-    title: "It starts in a terminal.",
-    body: "One agent, built with Genesis. Its expertise is decomposed into rules with stable IDs, and the checkable ones are compiled into hooks that run outside the model. The agent does not get asked to follow them.",
+    title: "It starts with an install.",
+    body: "Genesis goes on from the terminal like any other plugin, and the first agent comes out of it. Its expertise is decomposed into rules with stable IDs, and the checkable ones are compiled into hooks that run outside the model. The agent is never asked to follow them.",
   },
   {
     id: "act-team",
     label: "02",
-    title: "One agent becomes a team.",
-    body: "Hermes is the current version of my agent copilot, with Clippy supervising it and commune driving the terminals underneath. A supervisor routes work to specialists rather than one model trying to hold everything at once.",
+    title: "That agent builds the next ones.",
+    body: "This is the part that is checkable rather than claimed: Genesis is self hosting, so an agent it produced turns around and uses Genesis to build the rest. Each new agent arrives with its own rules already compiled and its own memory that supersedes facts instead of deleting them.",
   },
   {
     id: "act-task",
     label: "03",
-    title: "A task arrives. An agent picks it up.",
-    body: "The supervisor routes it to whichever specialist owns that work. That agent implements it under the same enforcement as everything else, cites the rules it applied, and hands the result back. That loop is the product.",
+    title: "An autonomous agentic system.",
+    body: "A task arrives and the supervisor routes it to whichever agent owns it. That agent writes the change, has a write denied by a rule it broke, cites the rule with evidence that resolves against the file, passes its tests, and merges. Nothing in that loop waits on a person, and nothing in it depends on the model choosing to behave.",
   },
 ];

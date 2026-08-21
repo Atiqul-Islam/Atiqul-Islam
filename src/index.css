@@ -55,6 +55,7 @@
 :root {
   color-scheme: light;
   --viz: 47 111 94;
+  --viz-deny: 150 52 62;
   --viz-a-dot: 0.13;
   --viz-a-node: 0.34;
   --viz-a-line: 0.16;
@@ -86,6 +87,7 @@
     --color-on-deny-box: oklch(0.906 0.05 25);
 
     --viz: 126 214 190;
+    --viz-deny: 232 138 146;
     --viz-a-dot: 0.15;
     --viz-a-node: 0.4;
     --viz-a-line: 0.18;
@@ -117,6 +119,7 @@
   --color-on-deny-box: oklch(0.906 0.05 25);
 
   --viz: 126 214 190;
+  --viz-deny: 232 138 146;
   --viz-a-dot: 0.15;
   --viz-a-node: 0.4;
   --viz-a-line: 0.18;
