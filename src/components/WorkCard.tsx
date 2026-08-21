@@ -7,11 +7,17 @@ import { STATUS_TONE, type Work } from "../data/portfolio";
  */
 export default function WorkCard({ work }: { work: Work }) {
   return (
+    /* A card that drives a background scene takes the full row and keeps its
+       content to the left half, so the canvas has a lane to draw in. Without
+       that the scene renders behind an opaque card and only leaks out between
+       the gaps, which looks like a bug rather than a background. */
     <article
       data-reveal
       data-scene={work.scene}
-      className={`group flex flex-col rounded-3xl border border-line bg-surface-lo p-6 transition-[border-color,transform,background-color] duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-line-strong hover:bg-surface-mid sm:p-7 ${
-        work.feature ? "lg:col-span-2" : ""
+      className={`group flex flex-col rounded-3xl border border-line p-6 transition-[border-color,transform,background-color] duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-line-strong sm:p-7 ${
+        work.scene
+          ? "bg-surface-lo/78 backdrop-blur-md hover:bg-surface-lo/90 lg:col-span-2 lg:max-w-[34rem] lg:min-h-[30rem] lg:justify-center"
+          : `bg-surface-lo hover:bg-surface-mid ${work.feature ? "lg:col-span-2" : ""}`
       }`}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">

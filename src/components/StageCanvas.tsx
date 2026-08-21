@@ -98,6 +98,7 @@ export default function StageCanvas() {
   const progress = useRef(0);
   const scene = useRef("hero");
   const scrolled = useRef(0);
+  const anchor = useRef<number | null>(null);
 
   useGSAP(
     () => {
@@ -809,7 +810,14 @@ export default function StageCanvas() {
         const boxW = narrow ? w * 0.9 : Math.max(wrapLeft + wrapW - sceneLeft, 300);
         const scale = Math.min(boxW / SW, (h * 0.8) / SH);
         const ox = narrow ? (w - SW * scale) / 2 : sceneLeft + (boxW - SW * scale) / 2;
-        const oy = (h - SH * scale) / 2;
+        // Centre the scene on whatever element declared it, and keep it on
+        // screen. Falling back to the viewport centre is only right for the
+        // acts, where the host is taller than the window.
+        const drawn = SH * scale;
+        const oy =
+          anchor.current === null
+            ? (h - drawn) / 2
+            : Math.min(Math.max(anchor.current - drawn / 2, 8), h - drawn - 8);
 
         ctx.save();
         ctx.translate(ox, oy);
@@ -863,6 +871,8 @@ export default function StageCanvas() {
             onUpdate: (self) => {
               scene.current = name;
               progress.current = self.progress;
+              const r = el.getBoundingClientRect();
+              anchor.current = name === "acts" ? null : r.top + r.height / 2;
               draw();
             },
             onEnterBack: () => {

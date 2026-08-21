@@ -128,7 +128,7 @@ export default function App() {
                 Employer work is described, not linked. Everything else you can clone.
               </p>
             </div>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid auto-rows-min gap-5 lg:grid-cols-2">
               {WORK.map((w) => (
                 <WorkCard key={w.id} work={w} />
               ))}
