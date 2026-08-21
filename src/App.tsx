@@ -96,6 +96,8 @@ export default function App() {
 
       <Header onToggleTheme={toggleTheme} />
 
+      <StageCanvas />
+
       <main id="main">
         <Hero />
 
@@ -123,9 +125,7 @@ export default function App() {
                 From flight software to agent infrastructure.
               </h2>
               <p className="mt-4 text-ink-dim">
-                Employer work is described without naming a customer or linking code that is not
-                mine to link. Everything else you can clone and read. Each item carries its real
-                status rather than a launch adjective.
+                Employer work is described, not linked. Everything else you can clone.
               </p>
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
@@ -137,8 +137,11 @@ export default function App() {
         </section>
 
         {/* ── The deep dive, labelled as one ──────────────────────────────── */}
-        <section className="relative border-t border-line" aria-label="How the work fits together">
-          <StageCanvas />
+        <section
+          className="relative border-t border-line"
+          aria-label="How the work fits together"
+          data-scene="acts"
+        >
           <div className={`${wrap} pt-[clamp(3.5rem,7vw,5.5rem)]`}>
             <div data-reveal className="max-w-[60ch]">
               <p className="eyebrow">A closer look · Genesis</p>
@@ -146,8 +149,7 @@ export default function App() {
                 What an agent system looks like when it has to hold up.
               </h2>
               <p className="mt-4 text-ink-dim">
-                One of the projects above, in five steps. Keep scrolling and it builds itself
-                beside you.
+                One of the projects above, in five steps, drawn as you scroll.
               </p>
             </div>
           </div>

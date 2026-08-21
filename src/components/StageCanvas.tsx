@@ -96,6 +96,8 @@ export default function StageCanvas() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const progress = useRef(0);
+  const scene = useRef("hero");
+  const scrolled = useRef(0);
 
   useGSAP(
     () => {
@@ -630,6 +632,150 @@ export default function StageCanvas() {
         }
       }
 
+
+      /* ── Scene: embedded, for the flight software ────────────────────────
+         A board rather than an abstraction. The bus labels and the peripherals
+         are the vocabulary of the work, and an orbit arc says where it went. */
+      function sceneEmbedded(p: number) {
+        const board: Rect = { x: 40, y: 150, w: 440, h: 250 };
+        const draw = easeOut(beat(p, 0, 0.2));
+        if (draw <= 0) return;
+        panel({ ...board, h: board.h * draw }, 1, 12);
+
+        // The orbit, and something on it.
+        const orb = beat(p, 0.1, 1);
+        ctx.strokeStyle = c(A.line * 0.7);
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 5]);
+        ctx.beginPath();
+        ctx.ellipse(SW / 2, 96, 210, 52, 0, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const oa = Math.PI + Math.PI * clamp(orb);
+        ctx.fillStyle = c(A.text);
+        ctx.beginPath();
+        ctx.arc(SW / 2 + Math.cos(oa) * 210, 96 + Math.sin(oa) * 52, 4, 0, Math.PI * 2);
+        ctx.fill();
+        label("orbit", SW / 2 - 20, 40, 10, A.dim * beat(p, 0.05, 0.2));
+
+        if (draw < 1) return;
+
+        // The MCU.
+        const mcu: Rect = { x: 190, y: 250, w: 140, h: 76 };
+        panel(mcu);
+        label("MSP430", mcu.x + 16, mcu.y + 26, 11, A.text);
+        label("FreeRTOS", mcu.x + 16, mcu.y + 48, 10, A.dim);
+
+        // Pins, because a chip without them reads as a box.
+        ctx.strokeStyle = c(A.line * 1.2);
+        for (let i = 0; i < 6; i++) {
+          const y = mcu.y + 14 + i * 11;
+          ctx.beginPath();
+          ctx.moveTo(mcu.x - 7, y);
+          ctx.lineTo(mcu.x, y);
+          ctx.moveTo(mcu.x + mcu.w, y);
+          ctx.lineTo(mcu.x + mcu.w + 7, y);
+          ctx.stroke();
+        }
+
+        const parts = [
+          { name: "FRAM", bus: "SPI", x: 62, y: 190 },
+          { name: "RADIO", bus: "SPI", x: 348, y: 190 },
+          { name: "SENSOR", bus: "I2C", x: 62, y: 336 },
+          { name: "OBC BUS", bus: "I2C", x: 348, y: 336 },
+        ];
+        parts.forEach((part, i) => {
+          const t = easeOut(beat(p, 0.24 + i * 0.1, 0.46 + i * 0.1));
+          if (t <= 0) return;
+          const r: Rect = { x: part.x, y: part.y, w: 100, h: 44 };
+          ctx.strokeStyle = c(A.line * t);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(mcu.x + mcu.w / 2, mcu.y + mcu.h / 2);
+          ctx.lineTo(
+            lerp(mcu.x + mcu.w / 2, r.x + r.w / 2, t),
+            lerp(mcu.y + mcu.h / 2, r.y + r.h / 2, t),
+          );
+          ctx.stroke();
+          panel(r, t);
+          label(part.name, r.x + 12, r.y + 18, 10, A.text * t);
+          label(part.bus, r.x + 12, r.y + 33, 9, A.dim * t);
+        });
+
+        // The scheduler ticking, which is the thing an RTOS actually is.
+        const tick = beat(p, 0.6, 1);
+        if (tick > 0) {
+          label("scheduler", 40, 432, 10, A.dim * tick);
+          for (let i = 0; i < 22; i++) {
+            const on = (i + Math.floor(tick * 24)) % 3 === 0;
+            ctx.fillStyle = c((on ? A.text : A.faint) * tick);
+            ctx.fillRect(120 + i * 15, 426 - (on ? 8 : 4), 3, on ? 12 : 8);
+          }
+        }
+      }
+
+      /* ── Scene: the platform ─────────────────────────────────────────────
+         A commit becoming a promotion becoming pods, which is what GitOps is
+         when you strip the branding off it. */
+      function scenePlatform(p: number) {
+        const git: Rect = { x: 180, y: 60, w: 160, h: 48 };
+        const t0 = easeOut(beat(p, 0, 0.16));
+        if (t0 <= 0) return;
+        panel(git, t0);
+        label("git · main", git.x + 14, git.y + 26, 11, A.text * t0);
+
+        const nodes = [0, 1, 2].map((i) => ({
+          r: { x: 30 + i * 158, y: 250, w: 138, h: 150 } as Rect,
+          name: ["node-1", "node-2", "node-3"][i],
+        }));
+
+        const promote = beat(p, 0.16, 0.36);
+        if (promote > 0) {
+          label("promote", SW / 2 - 26, 150, 10, A.dim * promote);
+          ctx.strokeStyle = c(A.line * promote);
+          ctx.lineWidth = 1;
+          nodes.forEach((n) => {
+            ctx.beginPath();
+            ctx.moveTo(git.x + git.w / 2, git.y + git.h);
+            ctx.bezierCurveTo(
+              git.x + git.w / 2, 190,
+              n.r.x + n.r.w / 2, 190,
+              n.r.x + n.r.w / 2, lerp(git.y + git.h, n.r.y, easeOut(promote)),
+            );
+            ctx.stroke();
+          });
+        }
+
+        nodes.forEach((n, i) => {
+          const t = easeOut(beat(p, 0.3 + i * 0.08, 0.52 + i * 0.08));
+          if (t <= 0) return;
+          panel(n.r, t);
+          label(n.name, n.r.x + 12, n.r.y + 20, 10.5, A.text * t);
+          // Pods filling in.
+          for (let k = 0; k < 6; k++) {
+            const pt = beat(p, 0.46 + i * 0.06 + k * 0.025, 0.62 + i * 0.06 + k * 0.025);
+            if (pt <= 0) continue;
+            const px = n.r.x + 14 + (k % 3) * 38;
+            const py = n.r.y + 44 + Math.floor(k / 3) * 42;
+            ctx.strokeStyle = c(A.line * 1.3 * pt);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(px, py, 30, 30, 5);
+            ctx.stroke();
+            ctx.fillStyle = c(A.faint * pt);
+            ctx.fillRect(px + 6, py + 12, 18, 2);
+            ctx.fillRect(px + 6, py + 18, 12, 2);
+          }
+          const h = beat(p, 0.72 + i * 0.05, 0.86 + i * 0.05);
+          if (h > 0) check(n.r.x + n.r.w - 16, n.r.y + 20, A.text * h);
+        });
+
+        const done = beat(p, 0.88, 1);
+        if (done > 0) {
+          label("healthy · rollback armed", 30, 432, 10, A.text * 0.85 * done);
+        }
+      }
+
       /* ── Ambient depth, present in every act ────────────────────────────── */
       function lattice(p: number) {
         const step = w < 700 ? 58 : 76;
@@ -649,7 +795,7 @@ export default function StageCanvas() {
         readTokens();
         const p = progress.current;
         ctx.clearRect(0, 0, w, h);
-        lattice(p);
+        lattice(scrolled.current);
 
         /* Derive the scene box from the same geometry the copy uses, rather
            than from magic fractions of the viewport. Fractions put the scene
@@ -670,15 +816,29 @@ export default function StageCanvas() {
         ctx.scale(scale, scale);
         ctx.globalAlpha = narrow ? 0.46 : 1;
 
-        const a2 = act(p, 1);
-        const a3 = act(p, 2);
-        const a4 = act(p, 3);
-        const a5 = act(p, 4);
-        if (a5 > 0) actFive(a5);
-        else if (a4 > 0) actFour(a4);
-        else if (a3 > 0) actThree(a3);
-        else if (a2 > 0) actTwo(a2);
-        else actOne(act(p, 0));
+        switch (scene.current) {
+          case "embedded":
+            sceneEmbedded(p);
+            break;
+          case "platform":
+            scenePlatform(p);
+            break;
+          case "acts": {
+            const a2 = act(p, 1);
+            const a3 = act(p, 2);
+            const a4 = act(p, 3);
+            const a5 = act(p, 4);
+            if (a5 > 0) actFive(a5);
+            else if (a4 > 0) actFour(a4);
+            else if (a3 > 0) actThree(a3);
+            else if (a2 > 0) actTwo(a2);
+            else actOne(act(p, 0));
+            break;
+          }
+          default:
+            // The hero: the first act, so the page opens on something forming.
+            actOne(clamp(p * 1.6));
+        }
 
         ctx.restore();
       }
@@ -690,16 +850,41 @@ export default function StageCanvas() {
       // One ScrollTrigger scrubs the whole narrative. `scrub: 0.6` softens the
       // link so a flick does not snap the scene, without letting it drift out
       // of step with the scrollbar the way a tween per section would.
-      const st = ScrollTrigger.create({
-        trigger: wrapRef.current!,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: reduced ? true : 0.45,
-        onUpdate: (self) => {
-          progress.current = self.progress;
-          draw();
-        },
+      const triggers: ScrollTrigger[] = [];
+
+      document.querySelectorAll<HTMLElement>("[data-scene]").forEach((el) => {
+        const name = el.dataset.scene!;
+        triggers.push(
+          ScrollTrigger.create({
+            trigger: el,
+            start: name === "acts" ? "top top" : "top 78%",
+            end: name === "acts" ? "bottom bottom" : "bottom 22%",
+            scrub: reduced ? true : 0.45,
+            onUpdate: (self) => {
+              scene.current = name;
+              progress.current = self.progress;
+              draw();
+            },
+            onEnterBack: () => {
+              scene.current = name;
+            },
+          }),
+        );
       });
+
+      // The lattice drifts on document scroll, so the background keeps moving
+      // between scenes rather than freezing in the gaps.
+      triggers.push(
+        ScrollTrigger.create({
+          start: 0,
+          end: () => ScrollTrigger.maxScroll(window),
+          scrub: true,
+          onUpdate: (self) => {
+            scrolled.current = self.progress;
+            draw();
+          },
+        }),
+      );
 
       const mo = new MutationObserver(draw);
       mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -707,15 +892,15 @@ export default function StageCanvas() {
       return () => {
         window.removeEventListener("resize", resize);
         mo.disconnect();
-        st.kill();
+        triggers.forEach((t) => t.kill());
       };
     },
     { scope: wrapRef },
   );
 
   return (
-    <div ref={wrapRef} className="pointer-events-none absolute inset-0 -z-10">
-      <canvas ref={canvasRef} aria-hidden="true" className="sticky top-0 h-screen w-full" />
+    <div ref={wrapRef} className="pointer-events-none fixed inset-0 -z-10">
+      <canvas ref={canvasRef} aria-hidden="true" className="h-full w-full" />
     </div>
   );
 }

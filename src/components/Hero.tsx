@@ -54,14 +54,12 @@ Software Developer at Instrumar · St. John&apos;s, Canada
           data-hero-fade
           className="mt-6 max-w-[36ch] text-[clamp(1.2rem,1.05rem+0.7vw,1.55rem)] leading-[1.4] text-ink-dim"
         >
-          Agent infrastructure, MLOps and the platform underneath. Eight years across flight
-          software, industrial data and agent systems in production.
+          Agent infrastructure, MLOps, and the platform underneath.
         </p>
 
         <p data-hero-fade className="mt-5 max-w-[52ch] text-ink-dim">
-          I have shipped embedded C to orbit, built and operate a private Kubernetes platform, and
-          published agent infrastructure other engineers install. Most of what I build ends up
-          operated by people who do not write code. Open to remote work anywhere.
+          Embedded C to orbit, a Kubernetes platform I own end to end, and agent infrastructure
+          other engineers install. Open to remote work anywhere.
         </p>
 
         <div data-hero-fade className="mt-9 flex flex-wrap gap-3">

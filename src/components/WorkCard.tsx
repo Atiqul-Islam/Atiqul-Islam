@@ -9,6 +9,7 @@ export default function WorkCard({ work }: { work: Work }) {
   return (
     <article
       data-reveal
+      data-scene={work.scene}
       className={`group flex flex-col rounded-3xl border border-line bg-surface-lo p-6 transition-[border-color,transform,background-color] duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-line-strong hover:bg-surface-mid sm:p-7 ${
         work.feature ? "lg:col-span-2" : ""
       }`}
@@ -24,7 +25,13 @@ export default function WorkCard({ work }: { work: Work }) {
       </div>
 
       <p className="mt-3.5 text-[1.02rem] text-ink">{work.lead}</p>
-      <p className="mt-3 text-[0.94rem] text-ink-dim">{work.body}</p>
+      <details className="group/d mt-3">
+        <summary className="cursor-pointer list-none font-mono text-[0.72rem] text-ink-dim transition-colors hover:text-ink">
+          <span className="group-open/d:hidden">More detail +</span>
+          <span className="hidden group-open/d:inline">Less &minus;</span>
+        </summary>
+        <p className="mt-3 text-[0.94rem] text-ink-dim">{work.body}</p>
+      </details>
 
       <p className="mt-4 font-mono text-[0.72rem] text-ink-dim">{work.role}</p>
 
