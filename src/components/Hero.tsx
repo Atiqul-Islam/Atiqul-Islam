@@ -3,7 +3,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import EnforcementPanel from "./EnforcementPanel";
 
-const HEADLINE = "I build the agent infrastructure other engineers ship on.";
+const HEADLINE = "I build systems that have to keep running.";
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export default function Hero() {
         <div>
         <p data-hero-fade className="eyebrow flex items-center gap-2.5">
           <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
-          Agent infrastructure · St. John&apos;s, Canada
+Software Developer at Instrumar · St. John&apos;s, Canada
         </p>
 
         {/* Split per word so each rides up behind its own clip: the sentence
@@ -54,21 +54,22 @@ export default function Hero() {
           data-hero-fade
           className="mt-6 max-w-[36ch] text-[clamp(1.2rem,1.05rem+0.7vw,1.55rem)] leading-[1.4] text-ink-dim"
         >
-          An agent can hold your instruction in its context and still not follow it.
+          Agent infrastructure, MLOps and the platform underneath. Eight years across flight
+          software, industrial data and agent systems in production.
         </p>
 
         <p data-hero-fade className="mt-5 max-w-[52ch] text-ink-dim">
-          Holding a rule and applying one are different things, and the gap widens the longer a
-          session runs. So I stopped asking, and built enforcement that runs outside the model.
-          Scroll and you can watch the whole loop, from one terminal to a team that ships.
+          I have shipped embedded C to orbit, built and operate a private Kubernetes platform, and
+          published agent infrastructure other engineers install. Most of what I build ends up
+          operated by people who do not write code. Open to remote work anywhere.
         </p>
 
         <div data-hero-fade className="mt-9 flex flex-wrap gap-3">
           <a
-            href="#act-terminal"
+            href="#work"
             className="group relative overflow-hidden rounded-full bg-primary px-6 py-3 font-semibold text-on-primary no-underline transition-transform duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-0.5"
           >
-            <span className="relative z-10">Watch the loop</span>
+            <span className="relative z-10">See the work</span>
             <span className="absolute inset-0 -translate-x-[130%] bg-[linear-gradient(100deg,transparent_30%,rgba(255,255,255,0.28)_50%,transparent_70%)] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:translate-x-[130%]" />
           </a>
           <a

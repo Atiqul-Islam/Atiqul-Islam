@@ -5,15 +5,26 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import StageCanvas from "./components/StageCanvas";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import ProjectSection from "./components/ProjectSection";
-import { ACTS, PROJECTS } from "./data/projects";
+import WorkCard from "./components/WorkCard";
+import { ACTS, CAPABILITIES, EXPERIENCE, STACK, WORK } from "./data/portfolio";
 import { useSmoothScroll } from "./lib/useSmoothScroll";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
+/**
+ * Order matters more here than anything else on the page.
+ *
+ * An earlier version opened with the Genesis thesis and spent five acts of
+ * scroll explaining it, so a reader learned a great deal about one open source
+ * project and almost nothing about the person. That is a product page.
+ *
+ * A portfolio answers who, at what level, and available for what inside the
+ * first screen, shows the range of the work next, and only then goes deep on
+ * one thing for whoever wants it. Breadth before depth.
+ */
 export default function App() {
   const root = useRef<HTMLDivElement>(null);
-  const [theme, setTheme] = useState<"light" | "dark" | null>(null);
+  const [, setTheme] = useState<"light" | "dark" | null>(null);
 
   useSmoothScroll();
 
@@ -63,13 +74,16 @@ export default function App() {
   );
 
   const toggleTheme = () => {
-    const isDark = theme
-      ? theme === "dark"
+    const cur = document.documentElement.dataset.theme;
+    const isDark = cur
+      ? cur === "dark"
       : window.matchMedia("(prefers-color-scheme: dark)").matches;
     const next = isDark ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     setTheme(next);
   };
+
+  const wrap = "mx-auto w-[min(100%-2.5rem,74rem)]";
 
   return (
     <div ref={root}>
@@ -85,99 +99,120 @@ export default function App() {
       <main id="main">
         <Hero />
 
-        {/* The narrative: one tall section holding the three acts, with the
-            canvas pinned behind all of them. */}
-        <section className="relative" aria-label="How the work fits together">
+        {/* ── What I do ──────────────────────────────────────────────────── */}
+        <section id="capabilities" className="border-t border-line py-[clamp(3.5rem,7vw,5.5rem)]">
+          <div className={wrap}>
+            <p data-reveal className="eyebrow">What I do</p>
+            <div className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
+              {CAPABILITIES.map((cap) => (
+                <div key={cap.title} data-reveal>
+                  <h3 className="text-[1.08rem]">{cap.title}</h3>
+                  <p className="mt-2.5 text-[0.94rem] text-ink-dim">{cap.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Selected work: the range, before any depth ──────────────────── */}
+        <section id="work" className="border-t border-line py-[clamp(4rem,9vw,6.5rem)]">
+          <div className={wrap}>
+            <div data-reveal className="mb-11 max-w-[60ch]">
+              <p className="eyebrow">Selected work</p>
+              <h2 className="wide mt-3 text-[clamp(1.85rem,1.35rem+2vw,2.9rem)]">
+                From flight software to agent infrastructure.
+              </h2>
+              <p className="mt-4 text-ink-dim">
+                Employer work is described without naming a customer or linking code that is not
+                mine to link. Everything else you can clone and read. Each item carries its real
+                status rather than a launch adjective.
+              </p>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              {WORK.map((w) => (
+                <WorkCard key={w.id} work={w} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── The deep dive, labelled as one ──────────────────────────────── */}
+        <section className="relative border-t border-line" aria-label="How the work fits together">
           <StageCanvas />
+          <div className={`${wrap} pt-[clamp(3.5rem,7vw,5.5rem)]`}>
+            <div data-reveal className="max-w-[60ch]">
+              <p className="eyebrow">A closer look · Genesis</p>
+              <h2 className="wide mt-3 text-[clamp(1.85rem,1.35rem+2vw,2.9rem)]">
+                What an agent system looks like when it has to hold up.
+              </h2>
+              <p className="mt-4 text-ink-dim">
+                One of the projects above, in five steps. Keep scrolling and it builds itself
+                beside you.
+              </p>
+            </div>
+          </div>
 
           {ACTS.map((a, i) => (
             <div
               key={a.id}
               id={a.id}
-              className="relative flex min-h-[76svh] items-center"
+              className="relative flex min-h-[84svh] items-center"
               data-drift={["1", "1.9", "1.35", "2.1", "1.6"][i]}
             >
-              <div className="mx-auto w-[min(100%-2.5rem,74rem)]">
-                <div className="max-w-[34rem] rounded-3xl border border-line bg-surface-lo/72 p-8 backdrop-blur-md sm:p-10">
+              <div className={wrap}>
+                <div className="max-w-[33rem] rounded-3xl border border-line bg-surface-lo/72 p-8 backdrop-blur-md sm:p-9">
                   <p className="eyebrow tabular-nums">{a.label} / 05</p>
-                  <h2 className="wide mt-3 text-[clamp(1.7rem,1.2rem+2vw,2.9rem)]">{a.title}</h2>
-                  <p className="mt-5 text-ink-dim">{a.body}</p>
+                  <h3 className="wide mt-3 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)]">{a.title}</h3>
+                  <p className="mt-4 text-ink-dim">{a.body}</p>
                 </div>
               </div>
             </div>
           ))}
         </section>
 
-        {PROJECTS.map((p, i) => (
-          <ProjectSection key={p.id} project={p} index={i} />
-        ))}
-
-        <section id="work" className="border-t border-line py-[clamp(4rem,9vw,7rem)]">
-          <div className="mx-auto w-[min(100%-2.5rem,74rem)]">
-            <div data-reveal className="mb-12 max-w-[62ch]">
-              <p className="eyebrow">Instrumar · since 2022</p>
+        {/* ── Experience ─────────────────────────────────────────────────── */}
+        <section id="experience" className="border-t border-line py-[clamp(4rem,9vw,6.5rem)]">
+          <div className={wrap}>
+            <div data-reveal className="mb-9">
+              <p className="eyebrow">Experience</p>
               <h2 className="wide mt-3 text-[clamp(1.85rem,1.35rem+2vw,2.9rem)]">
-                What I own at work
+                Where the work happened.
               </h2>
-              <p className="mt-4 text-ink-dim">
-                The open source is the part you can read. This is the part that runs a plant,
-                described without naming a customer or linking code that is not mine to link.
-              </p>
             </div>
-            <div className="grid gap-5 lg:grid-cols-3">
-              {[
-                {
-                  h: "Non programmers shipping models",
-                  p: "I built a zero code workflow that lets analysts and systems engineers, people who do not write code, build, validate and ship production models themselves. Some of the models built through it run in production today. The rest are built and in testing. The outcome is the point: domain experts ship without a developer in the loop.",
-                },
-                {
-                  h: "The platform underneath",
-                  p: "A private Kubernetes cluster on Apache CloudStack, Cluster API, that I specified, built and operate. Hardware, network architecture, deployment and production operations, with GitOps delivery, automated promotion and rollback, and release auditability. A parallel AWS cluster benchmarked cost against performance.",
-                },
-                {
-                  h: "Context engineering, in production",
-                  p: "A production agentic analytics product for plant operations, full stack, with a supervisor routing four specialist agents on LangGraph. I engineered its context management: knowledge modules loaded on demand instead of carried, a token budget split so the stable prompt stays cached, and history compaction that keeps metadata and drops payload until a result is actually needed.",
-                },
-              ].map((c) => (
-                <article
-                  key={c.h}
+            <ol className="m-0 list-none border-t border-line p-0">
+              {EXPERIENCE.map((r) => (
+                <li
+                  key={`${r.title}-${r.when}`}
                   data-reveal
-                  className="rounded-2xl border border-line bg-surface-lo p-6 transition-colors duration-300 hover:bg-surface-mid"
+                  className="grid gap-1 border-b border-line py-5 sm:grid-cols-[13rem_1fr] sm:gap-6"
                 >
-                  <h3 className="text-[1.12rem]">{c.h}</h3>
-                  <p className="mt-3 text-[0.95rem] text-ink-dim">{c.p}</p>
-                </article>
+                  <span className="font-mono text-[0.78rem] tabular-nums text-ink-dim">{r.when}</span>
+                  <div>
+                    <h3 className="text-[1.02rem]">
+                      {r.title}
+                      <span className="font-normal text-ink-dim"> · {r.org}</span>
+                    </h3>
+                    {r.note && <p className="mt-1.5 text-[0.94rem] text-ink-dim">{r.note}</p>}
+                  </div>
+                </li>
               ))}
-            </div>
+            </ol>
+            <p data-reveal className="mt-7 text-[0.95rem] text-ink-dim">
+              B.Eng Computer Engineering, Memorial University of Newfoundland, 2014 to 2022.
+            </p>
           </div>
         </section>
 
-        <section id="stack" className="border-t border-line py-[clamp(4rem,9vw,7rem)]">
-          <div className="mx-auto w-[min(100%-2.5rem,74rem)]">
-            <div data-reveal className="mb-12">
-              <p className="eyebrow">What I reach for</p>
-              <h2 className="wide mt-3 text-[clamp(1.85rem,1.35rem+2vw,2.9rem)]">Stack</h2>
-            </div>
+        {/* ── Stack ──────────────────────────────────────────────────────── */}
+        <section id="stack" className="border-t border-line py-[clamp(4rem,9vw,6.5rem)]">
+          <div className={wrap}>
+            <p data-reveal className="eyebrow mb-8">What I reach for</p>
             <dl data-reveal className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Languages", ["Rust", "Python", "Go", "TypeScript", "C#"]],
-                [
-                  "Agents and LLM",
-                  ["LangGraph", "MCP", "Context engineering", "ReAct", "RAG", "Evaluation"],
-                ],
-                [
-                  "Platform",
-                  ["Kubernetes", "Cluster API", "Apache CloudStack", "AWS", "Helm", "Kustomize"],
-                ],
-                [
-                  "Data and ops",
-                  ["PostgreSQL", "TimescaleDB", "Apache Pulsar", "Trino", "Prometheus", "OpenTelemetry"],
-                ],
-              ].map(([label, items]) => (
-                <div key={label as string}>
-                  <dt className="eyebrow mb-3">{label as string}</dt>
+              {STACK.map(([label, items]) => (
+                <div key={label}>
+                  <dt className="eyebrow mb-3">{label}</dt>
                   <dd className="m-0 flex flex-wrap gap-1.5">
-                    {(items as string[]).map((t) => (
+                    {items.map((t) => (
                       <span
                         key={t}
                         className="rounded-full border border-line px-2.5 py-1 font-mono text-[0.7rem] text-ink-dim transition-colors hover:border-line-strong hover:text-ink"
@@ -196,7 +231,7 @@ export default function App() {
       <footer id="contact" className="border-t border-line py-[clamp(4rem,8vw,6rem)]">
         <div
           data-reveal
-          className="mx-auto flex w-[min(100%-2.5rem,74rem)] flex-wrap items-end gap-8"
+          className={`${wrap} flex-wrap items-end gap-8`}
         >
           <div>
             <p className="eyebrow">Open to work</p>

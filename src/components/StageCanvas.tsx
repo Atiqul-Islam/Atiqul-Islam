@@ -65,7 +65,7 @@ const SLOTS = [
 ];
 
 // The deployed frame, and the phone that talks to what is inside it.
-const CLOUD = { x: 16, y: 34, w: 488, h: 340 };
+const CLOUD = { x: 16, y: 30, w: 488, h: 440 };
 const SUP_DEPLOYED = { x: 36, y: 58, w: 448, h: 48 };
 // Act IV gives the phone the whole stage, so it is drawn at a size a reader
 // can actually read the conversation in.
@@ -370,9 +370,9 @@ export default function StageCanvas() {
           name: slot.name,
           r: {
             x: lerp(slot.x, slot.deployX, deployT),
-            y: lerp(236, 158, deployT),
+            y: lerp(236, 150, deployT),
             w: lerp(152, 140, deployT),
-            h: lerp(104, 122, deployT),
+            h: lerp(104, 150, deployT),
           } as Rect,
         }));
 
@@ -401,7 +401,7 @@ export default function StageCanvas() {
         const rollout = beat(p, 0.46, 0.72);
         if (rollout > 0) {
           const bx = CLOUD.x + 16;
-          const by = CLOUD.y + CLOUD.h - 54;
+          const by = CLOUD.y + CLOUD.h - 40;
           ctx.strokeStyle = c(A.line);
           ctx.lineWidth = 1;
           ctx.beginPath();

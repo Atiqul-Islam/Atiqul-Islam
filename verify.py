@@ -121,8 +121,17 @@ try:
     # ── 2. React mounted and the sections exist ───────────────────────────
     acts = ws.js("document.querySelectorAll('[id^=act-]').length")
     check("five narrative acts rendered", acts == 5, f"got {acts}")
-    projs = ws.js("['genesis','graphcrew','commune','vocalize'].filter(id=>document.getElementById(id)).length")
-    check("a section per project", projs == 4, f"got {projs}")
+    items = ws.js("document.querySelectorAll('#work article').length")
+    check("selected work shows the range", items >= 12, f"got {items}")
+
+    # A portfolio has to be about the person before it is about a project.
+    heads = ws.js("[...document.querySelectorAll('h1,h2')].map(e=>e.textContent.trim())")
+    first_two = " ".join(heads[:2]).lower()
+    check("page does not open as a product pitch", "genesis" not in first_two, first_two[:60])
+    check("experience section present", bool(ws.js("!!document.getElementById('experience')")))
+    nar = ws.js('document.querySelector(\'[aria-label="How the work fits together"]\').offsetHeight')
+    doc = ws.js("document.documentElement.scrollHeight")
+    check("deep dive is a section, not the page", nar / doc < 0.45, f"{100*nar/doc:.0f}%")
     canvas = ws.js("!!document.querySelector('canvas')")
     check("narrative canvas mounted", bool(canvas))
 
@@ -154,17 +163,17 @@ try:
           return { a: m(acts[0]), b: m(acts[1]), scrollY: Math.round(window.scrollY) };
         })()""")
 
-    top = ws.js("document.getElementById('act-terminal').offsetTop")
+    top = ws.js("Math.round(document.getElementById('act-terminal').getBoundingClientRect().top + window.scrollY)")
     a1 = sample(top + 40)
     p1 = painted()
-    a2 = sample(top + 1400)
+    a2 = sample(top + 1500)
     p2 = painted()
-    a3 = sample(top + 2600)
+    a3 = sample(top + 3000)
     p3 = painted()
 
     check("canvas paints in act I", p1 > 400, f"{p1} px")
     check("canvas repaints across acts", len({p1, p2, p3}) == 3, f"{p1} / {p2} / {p3}")
-    check("page scrolls through the narrative", a3["scrollY"] > a1["scrollY"] + 2000,
+    check("page scrolls through the narrative", a3["scrollY"] > a1["scrollY"] + 2400,
           f"{a1['scrollY']} -> {a3['scrollY']}")
 
     d_a = abs(a3["a"] - a1["a"])
