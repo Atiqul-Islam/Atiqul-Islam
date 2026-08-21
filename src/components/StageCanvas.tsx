@@ -37,7 +37,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  */
 
 const SW = 640;
-const SH = 460;
+const SH = 420;
 const ACT_COUNT = 3;
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(Math.max(v, a), b);
@@ -70,11 +70,11 @@ const DIFF = [
 ];
 
 // The boxes the scene lerps between, so nothing ever cuts.
-const TERM_BIG = { x: 46, y: 78, w: 418, h: 206 };
-const TERM_SMALL = { x: 24, y: 18, w: 214, h: 56 };
-const AGENT_BORN = { x: 250, y: 320, w: 178, h: 78 };
-const AGENT_BUILDER = { x: 262, y: 18, w: 178, h: 56 };
-const SUPERVISOR = { x: 24, y: 18, w: SW - 48, h: 56 };
+const TERM_BIG = { x: 46, y: 60, w: 418, h: 196 };
+const TERM_SMALL = { x: 24, y: 40, w: 214, h: 56 };
+const AGENT_BORN = { x: 250, y: 290, w: 178, h: 78 };
+const AGENT_BUILDER = { x: 262, y: 40, w: 178, h: 56 };
+const SUPERVISOR = { x: 24, y: 40, w: SW - 48, h: 56 };
 
 type Rect = { x: number; y: number; w: number; h: number };
 const between = (a: Rect, b: Rect, t: number): Rect => ({
@@ -105,7 +105,7 @@ export default function StageCanvas() {
       /* The scene is the subject, not the wallpaper, so it does not inherit the
          ambient lattice alphas. At that weight the terminal was present but
          unreadable, which is exactly how it looked. */
-      const A = { line: 0.5, text: 0.88, dim: 0.46, faint: 0.26 };
+      const A = { line: 0.66, text: 1, dim: 0.62, faint: 0.36 };
 
       const readTokens = () => {
         const cs = getComputedStyle(document.documentElement);
@@ -272,15 +272,18 @@ export default function StageCanvas() {
       function actTwo(p: number) {
         // The terminal shrinks into the corner and stays. It is never replaced.
         const shrink = easeOut(beat(p, 0, 0.26));
+        // It has done its job by the end of this act, so it leaves rather than
+        // parking in the corner behind everything that follows.
+        const termOut = 1 - beat(p, 0.62, 0.86);
         const term = between(TERM_BIG, TERM_SMALL, shrink);
-        panel(term);
-        chrome(term);
+        panel(term, termOut);
+        chrome(term, termOut);
         if (shrink < 0.6) {
           ctx.save();
           ctx.beginPath();
           ctx.roundRect(term.x, term.y, term.w, term.h, 8);
           ctx.clip();
-          const fade = 1 - shrink / 0.6;
+          const fade = (1 - shrink / 0.6) * termOut;
           INSTALL.forEach((line, i) =>
             label(
               line.text,
@@ -292,7 +295,7 @@ export default function StageCanvas() {
           );
           ctx.restore();
         } else {
-          label("terminal", term.x + 14, term.y + 42, 10, A.dim);
+          label("terminal", term.x + 14, term.y + 42, 10, A.dim * termOut);
         }
 
         // The agent it produced rises and becomes the builder.
@@ -304,7 +307,7 @@ export default function StageCanvas() {
         SLOTS.forEach((slot, i) => {
           const t = beat(p, 0.32 + i * 0.15, 0.62 + i * 0.15);
           if (t <= 0) return;
-          const childY = 214;
+          const childY = 200;
           const grown = easeOut(t);
           const child: Rect = { x: slot.x, y: childY, w: 150, h: 92 };
 
@@ -326,17 +329,13 @@ export default function StageCanvas() {
         // Said out loud, so the recursion is legible rather than implied.
         const note = beat(p, 0.72, 0.94);
         if (note > 0) {
-          label("genesis builds the agents that build with genesis", 24, SH - 20, 10.5, A.dim * note);
+          label("genesis builds the agents that build with genesis", 24, SH - 44, 10.5, A.dim * note);
         }
       }
 
       /* ── Act III: the team it built runs a task, under enforcement ──────── */
       function actThree(p: number) {
         const settle = easeOut(beat(p, 0, 0.2));
-
-        panel(TERM_SMALL);
-        chrome(TERM_SMALL);
-        label("terminal", TERM_SMALL.x + 14, TERM_SMALL.y + 42, 10, A.dim);
 
         // The builder becomes the supervisor. Same box, new role.
         const sup = between(AGENT_BUILDER, SUPERVISOR, settle);
@@ -350,16 +349,16 @@ export default function StageCanvas() {
 
         const named = beat(p, 0.16, 0.3);
         if (named > 0) {
-          label("autonomous agentic system", 24, SH - 20, 10.5, A.dim * named);
+          label("autonomous agentic system", 24, SH - 44, 10.5, A.dim * named);
         }
 
         const panes = SLOTS.map((slot) => ({
           name: slot.name,
           r: {
             x: slot.x,
-            y: lerp(214, 200, settle),
+            y: lerp(200, 168, settle),
             w: 150,
-            h: lerp(92, 118, settle),
+            h: lerp(92, 116, settle),
           } as Rect,
         }));
 
@@ -392,7 +391,7 @@ export default function StageCanvas() {
             routed <= 0
               ? lerp(-cw, SW / 2 - cw / 2, easeOut(inbound))
               : lerp(SW / 2 - cw / 2, target.x + target.w / 2 - cw / 2, easeOut(routed));
-          const cy = routed <= 0 ? 120 : lerp(120, target.y - 26, easeOut(routed));
+          const cy = routed <= 0 ? 130 : lerp(130, target.y - 26, easeOut(routed));
           ctx.strokeStyle = c(A.line * 1.4);
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -419,9 +418,10 @@ export default function StageCanvas() {
         }
 
         // The write is denied. This is the argument, so it carries the weight.
-        if (denied > 0 && cited < 1) {
-          const a = denied * (1 - cited);
-          ctx.fillStyle = cDeny(0.14 * a);
+        const denyLabel = denied * clamp(1 - cited * 2.2);
+        if (denied > 0 && denyLabel > 0.02) {
+          const a = denyLabel;
+          ctx.fillStyle = cDeny(0.16 * a);
           ctx.beginPath();
           ctx.roundRect(target.x, target.y, target.w, target.h, 8);
           ctx.fill();
@@ -433,14 +433,21 @@ export default function StageCanvas() {
           label("DENIED · pt-3", target.x + 14, target.y + target.h - 16, 10, 0.95 * a, cDeny);
         }
 
-        if (cited > 0) {
-          label("cites pt-3 + evidence", target.x + 14, target.y + target.h - 16, 10, A.text * cited);
+        const citeLabel = clamp((cited - 0.45) / 0.55);
+        if (citeLabel > 0) {
+          label(
+            "cites pt-3 + evidence",
+            target.x + 14,
+            target.y + target.h - 16,
+            10,
+            A.text * citeLabel,
+          );
         }
 
         if (tests > 0) {
           for (let i = 0; i < 8; i++) {
             const t = beat(tests, i / 8, (i + 1) / 8);
-            if (t > 0) check(target.x + 20 + i * 17, target.y + target.h + 22, A.text * t);
+            if (t > 0) check(target.x + 20 + i * 17, target.y + target.h + 20, A.text * t);
           }
         }
 
@@ -449,9 +456,9 @@ export default function StageCanvas() {
           ctx.strokeStyle = c(A.line * 1.6 * done);
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(bx, target.y + target.h + 40, 128, 28, 6);
+          ctx.roundRect(bx, target.y + target.h + 34, 128, 28, 6);
           ctx.stroke();
-          label("merged  4f2a91c", bx + 12, target.y + target.h + 54, 10, A.text * done);
+          label("merged  4f2a91c", bx + 12, target.y + target.h + 48, 10, A.text * done);
         }
       }
 

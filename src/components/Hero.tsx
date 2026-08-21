@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import EnforcementPanel from "./EnforcementPanel";
 
 const HEADLINE = "I build the agent infrastructure other engineers ship on.";
 
@@ -30,8 +31,9 @@ export default function Hero() {
       <div
         id="top"
         ref={ref}
-        className="mx-auto w-[min(100%-2.5rem,74rem)] py-[clamp(3.5rem,8vw,6rem)]"
+        className="mx-auto grid w-[min(100%-2.5rem,74rem)] items-start gap-10 py-[clamp(3.5rem,8vw,6rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]"
       >
+        <div>
         <p data-hero-fade className="eyebrow flex items-center gap-2.5">
           <span className="inline-block size-1.5 animate-pulse rounded-full bg-primary" />
           Agent infrastructure · St. John&apos;s, Canada
@@ -75,6 +77,11 @@ export default function Hero() {
           >
             GitHub
           </a>
+        </div>
+        </div>
+
+        <div data-hero-fade>
+          <EnforcementPanel />
         </div>
       </div>
     </>

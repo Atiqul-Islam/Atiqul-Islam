@@ -86,9 +86,9 @@
     --color-deny-box: oklch(0.352 0.092 25);
     --color-on-deny-box: oklch(0.906 0.05 25);
 
-    --viz: 126 214 190;
-    --viz-deny: 232 138 146;
-    --viz-a-dot: 0.15;
+    --viz: 152 251 212;
+    --viz-deny: 255 150 158;
+    --viz-a-dot: 0.2;
     --viz-a-node: 0.4;
     --viz-a-line: 0.18;
   }
@@ -118,9 +118,9 @@
   --color-deny-box: oklch(0.352 0.092 25);
   --color-on-deny-box: oklch(0.906 0.05 25);
 
-  --viz: 126 214 190;
-  --viz-deny: 232 138 146;
-  --viz-a-dot: 0.15;
+  --viz: 152 251 212;
+  --viz-deny: 255 150 158;
+  --viz-a-dot: 0.2;
   --viz-a-node: 0.4;
   --viz-a-line: 0.18;
 }
@@ -154,6 +154,11 @@
     outline-offset: 3px;
     border-radius: 4px;
   }
+}
+
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
 }
 
 @utility eyebrow {
