@@ -13,14 +13,27 @@
  * what the work did rather than who it was for.
  */
 
-export type Status = "production" | "beta" | "in use" | "active development" | "shipped";
+export type Status =
+  | "production"
+  | "beta production"
+  | "beta"
+  | "in use"
+  | "shipped"
+  | "active development"
+  | "prototype"
+  | "paused"
+  | "planned";
 
 export const STATUS_TONE: Record<Status, string> = {
   production: "bg-primary-box text-on-primary-box",
+  "beta production": "bg-primary-box text-on-primary-box",
   beta: "bg-primary-box text-on-primary-box",
   "in use": "bg-primary-box text-on-primary-box",
   shipped: "bg-primary-box text-on-primary-box",
   "active development": "bg-accent-box text-on-accent-box",
+  prototype: "bg-accent-box text-on-accent-box",
+  paused: "bg-accent-box text-on-accent-box",
+  planned: "bg-accent-box text-on-accent-box",
 };
 
 export interface Work {
@@ -57,10 +70,10 @@ export const WORK: Work[] = [
     scene: "platform",
     name: "Private Kubernetes platform",
     where: "Instrumar",
-    status: "production",
-    lead: "I specified, built and operate the cluster everything runs on.",
-    body: "A private Kubernetes cluster on Apache CloudStack using Cluster API, covering hardware, network architecture, deployment and production operations. GitOps delivery with Helm and Kustomize, automated promotion, rollback and release auditability. A parallel AWS cluster was run alongside it to benchmark cost against performance.",
-    role: "Sole owner, hardware to production",
+    status: "beta production",
+    lead: "I specified and built a private cluster, and ran it in beta production.",
+    body: "A private Kubernetes cluster on Apache CloudStack using Cluster API, covering hardware, network architecture, deployment and production operations. GitOps delivery with Helm and Kustomize, automated promotion, rollback and release auditability. A parallel AWS cluster was run alongside it purely to benchmark cost against performance. It reached beta production and was then scrapped when the client and the funding went under the tariff climate, which is a business outcome rather than anything the platform did.",
+    role: "Sole owner, hardware to operations",
     chips: ["Kubernetes", "Cluster API", "Apache CloudStack", "AWS"],
   },
   {
@@ -158,19 +171,19 @@ export const WORK: Work[] = [
     id: "commune",
     name: "commune",
     where: "Open source for Instrumar",
-    status: "in use",
+    status: "beta",
     lead: "Drive any terminal coding agent over a real pseudo terminal.",
     body: "It spawns the agent, forwards input unchanged, and renders output through a terminal emulator into clean frames a human watches live and a bot reads as text. Windows first over ConPTY, cross platform through portable-pty. Dual mode: interactive for a person, plus an MCP over Streamable HTTP server managing many agents at once. Its WinRM installer has been used to put it on a remote host as one self contained executable.",
-    role: "Sole author",
+    role: "Sole author. Beta, in use",
     chips: ["Rust", "ConPTY", "MCP over HTTP", "axum"],
   },
   {
     id: "cert-tracker",
     name: "AMS AI Solutions",
     where: "My own venture, with Maxwell Patten",
-    status: "shipped",
-    lead: "Client software built outside a day job, from my idea to delivery.",
-    body: "My idea, and I managed, designed and architected it. cert-tracker is the deliverable, a FastAPI service built for a client's business. The interesting part was not the stack: it was owning the thing end to end, from deciding what to build through to what shipped.",
+    status: "prototype",
+    lead: "A venture I started outside a day job, and architected myself.",
+    body: "My idea, and I managed, designed and architected it, with Maxwell bringing the client. cert-tracker is the deliverable, a FastAPI certificate expiry API. It stalled at MVP and I am not going to describe it as more than that. What it is evidence of is the other half of the job: deciding what to build and owning that decision, rather than being handed a spec.",
     role: "My idea, my architecture",
     chips: ["FastAPI", "Python", "Client delivery", "Architecture"],
   },
@@ -217,7 +230,7 @@ export const CAPABILITIES = [
   },
   {
     title: "Platform and MLOps",
-    body: "A private Kubernetes cluster I own from hardware to production operations.",
+    body: "A private Kubernetes cluster I specified and built, hardware through to operations.",
   },
   {
     title: "Full stack product",
