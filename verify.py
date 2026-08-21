@@ -118,96 +118,75 @@ try:
     ws.js("window.__errs=[];addEventListener('error',e=>__errs.push(String(e.message)))")
     check("no JS error captured after load", errs == 0, f"{errs} errors")
 
-    # ── 2. The panel actually built its rows ───────────────────────────────
-    steps = ws.js("document.querySelectorAll('#steps .step').length")
-    check("panel rendered 5 steps (enforced run)", steps == 5, f"got {steps}")
-    denied = ws.js("!!document.querySelector('#steps .step.is-deny')")
-    check("a step is marked denied", bool(denied))
+    # ── 2. React mounted and the sections exist ───────────────────────────
+    acts = ws.js("document.querySelectorAll('[id^=act-]').length")
+    check("three narrative acts rendered", acts == 3, f"got {acts}")
+    projs = ws.js("['genesis','graphcrew','commune','vocalize'].filter(id=>document.getElementById(id)).length")
+    check("a section per project", projs == 4, f"got {projs}")
+    canvas = ws.js("!!document.querySelector('canvas')")
+    check("narrative canvas mounted", bool(canvas))
 
-    # ── 3. The toggle changes the run ──────────────────────────────────────
-    before = ws.js("document.querySelector('#verdict').textContent.slice(0,40)")
-    ws.js("document.querySelector('.seg button[data-mode=\\'prompted\\']').click()")
-    time.sleep(0.8)
-    after = ws.js("document.querySelector('#verdict').textContent.slice(0,40)")
-    n_prompted = ws.js("document.querySelectorAll('#steps .step').length")
-    check("toggle swaps the verdict text", before != after, f"{before!r} -> {after!r}")
-    check("prompted run has 4 steps", n_prompted == 4, f"got {n_prompted}")
-    ws.js("document.querySelector('.seg button[data-mode=\\'enforced\\']').click()")
-    time.sleep(0.5)
+    # ── 3. The canvas actually paints ─────────────────────────────────────
+    def painted():
+        return ws.js("""(() => {
+          const c = document.querySelector('canvas');
+          const g = c.getContext('2d');
+          const d = g.getImageData(0, 0, c.width, c.height).data;
+          let n = 0;
+          for (let i = 3; i < d.length; i += 4) if (d[i] > 4) n++;
+          return n;
+        })()""")
 
-    # ── 4. The canvas actually paints ──────────────────────────────────────
-    painted = ws.js("""(() => {
-      const c = document.getElementById('field');
-      const g = c.getContext('2d');
-      const d = g.getImageData(0, 0, c.width, c.height).data;
-      let n = 0;
-      for (let i = 3; i < d.length; i += 4) if (d[i] > 4) n++;
-      return n;
-    })()""")
-    check("canvas field has painted pixels", painted > 500, f"{painted} non transparent px")
-
-    # ── 5. Parallax: layers move, and by DIFFERENT amounts ─────────────────
     def sample(y):
         ws.js(f"window.scrollTo({{top:{y},behavior:'instant'}})")
-        time.sleep(0.45)
+        time.sleep(0.75)
         return ws.js("""(() => {
           const m = el => {
-            if (!el) return null;
+            if (!el) return 0;
             const t = getComputedStyle(el).transform;
             if (!t || t === 'none') return 0;
             const p = t.match(/matrix.*\\((.+)\\)/);
+            if (!p) return 0;
             const v = p[1].split(', ').map(Number);
             return v.length === 6 ? v[5] : v[13];
           };
-          return {
-            hero: m(document.getElementById('top')),
-            heroOpacity: parseFloat(getComputedStyle(document.getElementById('top')).opacity),
-            mark: m(document.querySelector('.vista-mark')),
-            cap:  m(document.querySelector('.vista-cap')),
-            scrollY: Math.round(window.scrollY)
-          };
+          const acts = [...document.querySelectorAll('[data-drift]')];
+          return { a: m(acts[0]), b: m(acts[1]), scrollY: Math.round(window.scrollY) };
         })()""")
 
-    a = sample(0)
-    b = sample(500)
-    check("page actually scrolls", b["scrollY"] > 400, f"scrollY={b['scrollY']}")
-    check("hero translates with scroll", abs(b["hero"] - a["hero"]) > 40,
-          f"{a['hero']:.1f} -> {b['hero']:.1f}")
-    check("hero fades as it leaves", b["heroOpacity"] < a["heroOpacity"] - 0.1,
-          f"{a['heroOpacity']:.2f} -> {b['heroOpacity']:.2f}")
+    top = ws.js("document.getElementById('act-terminal').offsetTop")
+    a1 = sample(top + 40)
+    p1 = painted()
+    a2 = sample(top + 1400)
+    p2 = painted()
+    a3 = sample(top + 2600)
+    p3 = painted()
 
-    # Put the vista band mid viewport, then move a little, and compare layers.
-    vy = ws.js("Math.round(document.getElementById('vista').offsetTop - innerHeight/2)")
-    c1 = sample(max(vy - 260, 0))
-    c2 = sample(vy + 260)
-    d_mark = abs(c2["mark"] - c1["mark"])
-    d_cap = abs(c2["cap"] - c1["cap"])
-    check("vista back mark travels", d_mark > 20, f"delta {d_mark:.1f}px")
-    check("vista caption travels", d_cap > 20, f"delta {d_cap:.1f}px")
-    check("layers travel at DIFFERENT rates (this is the parallax)",
-          abs(d_mark - d_cap) > 15, f"mark {d_mark:.1f}px vs cap {d_cap:.1f}px")
-    check("back mark moves opposite to the caption",
-          (c2["mark"] - c1["mark"]) * (c2["cap"] - c1["cap"]) < 0,
-          f"mark {c2['mark']-c1['mark']:.1f}, cap {c2['cap']-c1['cap']:.1f}")
+    check("canvas paints in act I", p1 > 400, f"{p1} px")
+    check("canvas repaints across acts", len({p1, p2, p3}) == 3, f"{p1} / {p2} / {p3}")
+    check("page scrolls through the narrative", a3["scrollY"] > a1["scrollY"] + 2000,
+          f"{a1['scrollY']} -> {a3['scrollY']}")
 
-    # ── 6. Canvas repaints as you scroll (the field parallaxes too) ────────
-    def fingerprint():
-        return ws.js("document.getElementById('field').toDataURL().length")
-    ws.js("window.scrollTo({top:0,behavior:'instant'})"); time.sleep(0.5)
-    f1 = ws.js("""(() => {const c=document.getElementById('field');
-      const d=c.getContext('2d').getImageData(0,0,c.width,Math.min(c.height,400)).data;
-      let s=0; for(let i=3;i<d.length;i+=40) s+=d[i]; return s;})()""")
-    ws.js("window.scrollTo({top:900,behavior:'instant'})"); time.sleep(0.7)
-    f2 = ws.js("""(() => {const c=document.getElementById('field');
-      const d=c.getContext('2d').getImageData(0,0,c.width,Math.min(c.height,400)).data;
-      let s=0; for(let i=3;i<d.length;i+=40) s+=d[i]; return s;})()""")
-    check("canvas field repaints on scroll", f1 != f2, f"{f1} -> {f2}")
+    d_a = abs(a3["a"] - a1["a"])
+    d_b = abs(a3["b"] - a1["b"])
+    check("act panel one drifts", d_a > 15, f"{d_a:.1f}px")
+    check("act panel two drifts", d_b > 15, f"{d_b:.1f}px")
+    check("panels drift at DIFFERENT rates (the parallax)", abs(d_a - d_b) > 10,
+          f"{d_a:.1f}px vs {d_b:.1f}px")
 
-    # ── 7. Sticky header engages ───────────────────────────────────────────
-    stuck = ws.js("document.querySelector('header.bar').classList.contains('stuck')")
+    # ── 4. Theme toggle repaints the canvas from tokens ───────────────────
+    before_bg = ws.js("getComputedStyle(document.body).backgroundColor")
+    ws.js("document.querySelector('header button').click()")
+    time.sleep(0.9)
+    after_bg = ws.js("getComputedStyle(document.body).backgroundColor")
+    check("theme toggle changes the surface", before_bg != after_bg,
+          f"{before_bg} -> {after_bg}")
+
+    # ── 5. Sticky header engages ──────────────────────────────────────────
+    stuck = ws.js("!document.querySelector('header').className.includes('border-transparent')")
     check("header hairline engages once scrolled", bool(stuck))
 
-    # ── 8. No horizontal overflow ──────────────────────────────────────────
+    # ── 6. No horizontal overflow, no console errors ──────────────────────
     ox = ws.js("document.documentElement.scrollWidth - document.documentElement.clientWidth")
     check("no horizontal page scroll", ox <= 1, f"{ox}px overflow")
 

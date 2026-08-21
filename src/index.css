@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Material Design 3 roles as Tailwind v4 theme tokens.
+
+   v4 is CSS-first: @theme entries become both CSS custom properties and
+   utility classes, so `bg-surface-lo` and `var(--color-surface-lo)` stay the
+   same value with no JS config file to drift from the stylesheet.
+
+   Tones are authored in oklch, not hex, because a tonal palette only works if
+   a step from one tone to the next is a perceptually even step. Hex cannot
+   hold that: two values four points apart in lightness look four different
+   distances apart depending on hue.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-surface: oklch(0.985 0.004 170);
+  --color-surface-lo: oklch(0.966 0.006 170);
+  --color-surface-mid: oklch(0.946 0.008 170);
+  --color-surface-hi: oklch(0.922 0.011 170);
+  --color-ink: oklch(0.235 0.014 170);
+  --color-ink-dim: oklch(0.455 0.013 170);
+  --color-line: oklch(0.862 0.01 170);
+  --color-line-strong: oklch(0.64 0.012 170);
+
+  --color-primary: oklch(0.452 0.08 168);
+  --color-on-primary: oklch(0.99 0.005 170);
+  --color-primary-box: oklch(0.902 0.046 168);
+  --color-on-primary-box: oklch(0.262 0.052 168);
+
+  --color-accent: oklch(0.498 0.086 72);
+  --color-accent-box: oklch(0.906 0.055 78);
+  --color-on-accent-box: oklch(0.302 0.058 72);
+
+  /* Reserved for the deny state. Red already means blocked in this work, so
+     spending it on decoration would misread. */
+  --color-deny: oklch(0.482 0.148 25);
+  --color-deny-box: oklch(0.912 0.046 25);
+  --color-on-deny-box: oklch(0.302 0.092 25);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-md: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Dark is defined once, on tokens only, and applied through three selectors so
+   all three viewer states resolve as a complete set: system dark, an explicit
+   dark choice, and an explicit light choice beating a dark OS. A colour whose
+   only definition lives inside a media query never applies in the un-stamped
+   state, which is the classic unreadable-page bug. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --viz: 47 111 94;
+  --viz-a-dot: 0.13;
+  --viz-a-node: 0.34;
+  --viz-a-line: 0.16;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-surface: oklch(0.168 0.01 170);
+    --color-surface-lo: oklch(0.204 0.012 170);
+    --color-surface-mid: oklch(0.238 0.013 170);
+    --color-surface-hi: oklch(0.28 0.015 170);
+    --color-ink: oklch(0.928 0.008 170);
+    --color-ink-dim: oklch(0.756 0.013 170);
+    --color-line: oklch(0.372 0.013 170);
+    --color-line-strong: oklch(0.56 0.013 170);
+
+    --color-primary: oklch(0.808 0.082 168);
+    --color-on-primary: oklch(0.238 0.056 168);
+    --color-primary-box: oklch(0.342 0.062 168);
+    --color-on-primary-box: oklch(0.888 0.06 168);
+
+    --color-accent: oklch(0.826 0.08 78);
+    --color-accent-box: oklch(0.358 0.056 75);
+    --color-on-accent-box: oklch(0.906 0.055 78);
+
+    --color-deny: oklch(0.756 0.112 25);
+    --color-deny-box: oklch(0.352 0.092 25);
+    --color-on-deny-box: oklch(0.906 0.05 25);
+
+    --viz: 126 214 190;
+    --viz-a-dot: 0.15;
+    --viz-a-node: 0.4;
+    --viz-a-line: 0.18;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-surface: oklch(0.168 0.01 170);
+  --color-surface-lo: oklch(0.204 0.012 170);
+  --color-surface-mid: oklch(0.238 0.013 170);
+  --color-surface-hi: oklch(0.28 0.015 170);
+  --color-ink: oklch(0.928 0.008 170);
+  --color-ink-dim: oklch(0.756 0.013 170);
+  --color-line: oklch(0.372 0.013 170);
+  --color-line-strong: oklch(0.56 0.013 170);
+
+  --color-primary: oklch(0.808 0.082 168);
+  --color-on-primary: oklch(0.238 0.056 168);
+  --color-primary-box: oklch(0.342 0.062 168);
+  --color-on-primary-box: oklch(0.888 0.06 168);
+
+  --color-accent: oklch(0.826 0.08 78);
+  --color-accent-box: oklch(0.358 0.056 75);
+  --color-on-accent-box: oklch(0.906 0.055 78);
+
+  --color-deny: oklch(0.756 0.112 25);
+  --color-deny-box: oklch(0.352 0.092 25);
+  --color-on-deny-box: oklch(0.906 0.05 25);
+
+  --viz: 126 214 190;
+  --viz-a-dot: 0.15;
+  --viz-a-node: 0.4;
+  --viz-a-line: 0.18;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.62;
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    /* clip rather than hidden: hidden computes overflow-y to auto and makes
+       body a scroll container, which breaks every position:sticky inside it. */
+    overflow-x: clip;
+  }
+  h1, h2, h3 {
+    font-variation-settings: "wdth" 118;
+    font-weight: 700;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+  :focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+@utility wide {
+  font-variation-settings: "wdth" 122;
+}
+
+/* Lenis drives scroll from rAF, so the browser's own smooth scrolling has to
+   be off or the two fight over the same scroll position. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
