@@ -120,7 +120,7 @@ try:
 
     # ── 2. React mounted and the sections exist ───────────────────────────
     acts = ws.js("document.querySelectorAll('[id^=act-]').length")
-    check("three narrative acts rendered", acts == 3, f"got {acts}")
+    check("five narrative acts rendered", acts == 5, f"got {acts}")
     projs = ws.js("['genesis','graphcrew','commune','vocalize'].filter(id=>document.getElementById(id)).length")
     check("a section per project", projs == 4, f"got {projs}")
     canvas = ws.js("!!document.querySelector('canvas')")

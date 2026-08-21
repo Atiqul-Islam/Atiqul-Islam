@@ -38,7 +38,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const SW = 640;
 const SH = 420;
-const ACT_COUNT = 3;
+const ACT_COUNT = 5;
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(Math.max(v, a), b);
 /** Progress within one act, so each act can be authored 0..1. */
@@ -55,12 +55,19 @@ const INSTALL = [
   { text: "  genesis ready  ·  17 releases", cmd: false },
 ];
 
-/** Where the built agents appear in act II, and settle into in act III. */
+/** Where the built agents appear in act II, and where they sit once deployed.
+    The system keeps the same three boxes the whole way through; only the frame
+    around them changes. */
 const SLOTS = [
-  { name: "method", x: 24 },
-  { name: "mneme", x: 245 },
-  { name: "atlas", x: 466 },
+  { name: "method", x: 24, deployX: 158 },
+  { name: "mneme", x: 245, deployX: 318 },
+  { name: "atlas", x: 466, deployX: 478 },
 ];
+
+// The deployed frame, and the phone that talks to what is inside it.
+const CLOUD = { x: 142, y: 26, w: 494, h: 286 };
+const SUP_DEPLOYED = { x: 158, y: 46, w: 462, h: 46 };
+const PHONE = { x: 10, y: 96, w: 104, h: 196 };
 
 const DIFF = [
   { sign: "+", w: 80 },
@@ -74,7 +81,6 @@ const TERM_BIG = { x: 46, y: 60, w: 418, h: 196 };
 const TERM_SMALL = { x: 24, y: 40, w: 214, h: 56 };
 const AGENT_BORN = { x: 250, y: 290, w: 178, h: 78 };
 const AGENT_BUILDER = { x: 262, y: 40, w: 178, h: 56 };
-const SUPERVISOR = { x: 24, y: 40, w: SW - 48, h: 56 };
 
 type Rect = { x: number; y: number; w: number; h: number };
 const between = (a: Rect, b: Rect, t: number): Rect => ({
@@ -333,46 +339,176 @@ export default function StageCanvas() {
         }
       }
 
-      /* ── Act III: the team it built runs a task, under enforcement ──────── */
-      function actThree(p: number) {
-        const settle = easeOut(beat(p, 0, 0.2));
+      /* ── The deployed system, shared by acts III onward ─────────────────
+         Drawn once and reused, so the boxes a reader learned in act II are
+         literally the same boxes for the rest of the story. */
+      function system(deployT: number, opts: { cloud?: number } = {}) {
+        const cloudT = opts.cloud ?? 0;
+        if (cloudT > 0) {
+          ctx.setLineDash([5, 4]);
+          panel(
+            { x: CLOUD.x, y: CLOUD.y, w: CLOUD.w * easeOut(cloudT), h: CLOUD.h },
+            cloudT * 0.85,
+            14,
+          );
+          ctx.setLineDash([]);
+          label("aws  ·  eks", CLOUD.x + 14, CLOUD.y - 11, 10.5, A.text * 0.85 * cloudT);
+        }
 
-        // The builder becomes the supervisor. Same box, new role.
-        const sup = between(AGENT_BUILDER, SUPERVISOR, settle);
+        const sup = between(AGENT_BUILDER, SUP_DEPLOYED, deployT);
         panel(sup);
-        label("sensei · supervisor", sup.x + 16, sup.y + 28, 11, A.text);
-        const dotP = 0.55 + Math.sin(p * Math.PI * 8) * 0.45;
+        label("sensei · supervisor", sup.x + 16, sup.y + 24, 11, A.text);
+        const dotP = 0.55 + Math.sin(deployT * Math.PI * 6) * 0.45;
         ctx.fillStyle = c(A.text * dotP);
         ctx.beginPath();
-        ctx.arc(sup.x + sup.w - 20, sup.y + 28, 3.2, 0, Math.PI * 2);
+        ctx.arc(sup.x + sup.w - 20, sup.y + 24, 3.2, 0, Math.PI * 2);
         ctx.fill();
-
-        const named = beat(p, 0.16, 0.3);
-        if (named > 0) {
-          label("autonomous agentic system", 24, SH - 44, 10.5, A.dim * named);
-        }
 
         const panes = SLOTS.map((slot) => ({
           name: slot.name,
           r: {
-            x: slot.x,
-            y: lerp(200, 168, settle),
-            w: 150,
-            h: lerp(92, 116, settle),
+            x: lerp(slot.x, slot.deployX, deployT),
+            y: lerp(200, 132, deployT),
+            w: lerp(150, 144, deployT),
+            h: lerp(92, 104, deployT),
           } as Rect,
         }));
 
-        panes.forEach((pane, i) => {
-          link(sup.x + sup.w / 2, sup.y + sup.h, pane.r.x + pane.r.w / 2, pane.r.y, settle);
+        panes.forEach((pane) => {
+          link(sup.x + sup.w / 2, sup.y + sup.h, pane.r.x + pane.r.w / 2, pane.r.y, deployT);
           panel(pane.r);
           label(pane.name, pane.r.x + 14, pane.r.y + 20, 11, A.text);
+        });
+        return { sup, panes };
+      }
+
+      /** The badge on the deployed frame, so AWS stays named after act III. */
+      const cloudLabel = (a: number) => {
+        label("aws  ·  eks", CLOUD.x + 14, CLOUD.y - 11, 10.5, A.text * 0.85 * a);
+        label("healthy · live", CLOUD.x + CLOUD.w - 92, CLOUD.y - 11, 10, A.text * 0.85 * a);
+      };
+
+      /* ── Act III: the system ships to AWS ───────────────────────────────── */
+      function actThree(p: number) {
+        const move = easeOut(beat(p, 0, 0.28));
+        const cloud = beat(p, 0.16, 0.44);
+        const { panes } = system(move, { cloud });
+
+        // A rollout bar, then health checks, then it is live. The same shape
+        // any other service gets, which is the point being made.
+        const rollout = beat(p, 0.46, 0.72);
+        if (rollout > 0) {
+          const bx = CLOUD.x + 16;
+          const by = CLOUD.y + CLOUD.h - 54;
+          ctx.strokeStyle = c(A.line);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(bx, by, CLOUD.w - 32, 10, 5);
+          ctx.stroke();
+          ctx.fillStyle = c(A.line * 1.5);
+          ctx.beginPath();
+          ctx.roundRect(bx + 2, by + 2, (CLOUD.w - 36) * easeOut(rollout), 6, 3);
+          ctx.fill();
+          label("deploying to aws  ·  v1.4.0", bx, by - 14, 10, A.dim * rollout);
+        }
+
+        const health = beat(p, 0.7, 0.9);
+        panes.forEach((pane, i) => {
+          const t = beat(health, i / 3, (i + 1) / 3);
+          if (t > 0) check(pane.r.x + pane.r.w - 18, pane.r.y + 20, A.text * t);
+        });
+
+        const live = beat(p, 0.88, 1);
+        if (live > 0) {
+          label("healthy · live", CLOUD.x + CLOUD.w - 92, CLOUD.y - 11, 10, A.text * 0.85 * live);
+        }
+      }
+
+      /* ── Act IV: a person asks for something from their phone ───────────── */
+      function actFour(p: number) {
+        system(1, { cloud: 1 });
+        cloudLabel(1);
+
+        const slide = easeOut(beat(p, 0, 0.2));
+        if (slide <= 0) return;
+        const ph: Rect = {
+          x: lerp(-PHONE.w, PHONE.x, slide),
+          y: PHONE.y,
+          w: PHONE.w,
+          h: PHONE.h,
+        };
+        panel(ph, 1, 14);
+        // Speaker slot, so it reads as a phone and not a card.
+        ctx.strokeStyle = c(A.line);
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(ph.x + ph.w / 2 - 10, ph.y + 12);
+        ctx.lineTo(ph.x + ph.w / 2 + 10, ph.y + 12);
+        ctx.stroke();
+
+        // Their message, then the agent's reply.
+        const ask = beat(p, 0.22, 0.5);
+        if (ask > 0) {
+          ctx.strokeStyle = c(A.line * 1.2 * ask);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(ph.x + 10, ph.y + 30, 74, 42, 8);
+          ctx.stroke();
+          typed("the report", ph.x + 17, ph.y + 44, 9, beat(ask, 0, 0.55), A.text);
+          typed("is stale", ph.x + 17, ph.y + 58, 9, beat(ask, 0.5, 1), A.text);
+        }
+
+        const reply = beat(p, 0.5, 0.78);
+        if (reply > 0) {
+          ctx.fillStyle = c(A.line * 0.5 * reply);
+          ctx.beginPath();
+          ctx.roundRect(ph.x + 22, ph.y + 84, 72, 36, 8);
+          ctx.fill();
+          typed("on it —", ph.x + 29, ph.y + 96, 9, beat(reply, 0, 0.5), A.text * 0.9);
+          typed("TASK-418", ph.x + 29, ph.y + 110, 9, beat(reply, 0.45, 1), A.text * 0.9);
+        }
+
+        // The message becomes a task and heads for the system.
+        const send = beat(p, 0.78, 1);
+        if (send > 0) {
+          const fromX = ph.x + ph.w;
+          const fromY = ph.y + 102;
+          const toX = CLOUD.x;
+          const toY = CLOUD.y + CLOUD.h / 2;
+          ctx.strokeStyle = c(A.line * 1.2 * send);
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(fromX, fromY);
+          ctx.lineTo(lerp(fromX, toX, easeOut(send)), lerp(fromY, toY, easeOut(send)));
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = c(A.text * send);
+          ctx.beginPath();
+          ctx.arc(lerp(fromX, toX, easeOut(send)), lerp(fromY, toY, easeOut(send)), 3.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      /* ── Act V: the task is picked up and shipped, under enforcement ────── */
+      function actFive(p: number) {
+        const { panes } = system(1, { cloud: 1 });
+        cloudLabel(1);
+        const settle = 1;
+
+        const named = beat(p, 0.1, 0.24);
+        if (named > 0) {
+          label("autonomous agentic system", CLOUD.x, SH - 40, 10.5, A.dim * named);
+        }
+
+        panes.forEach((pane, i) => {
           for (let l = 0; l < 3; l++) {
-            const lt = beat(p, 0.1 + i * 0.05 + l * 0.03, 0.26 + i * 0.05 + l * 0.03);
+            const lt = beat(p, 0.06 + i * 0.05 + l * 0.03, 0.22 + i * 0.05 + l * 0.03);
             if (lt > 0) {
-              bar(pane.r.x + 14, pane.r.y + 40 + l * 11, (36 + ((i * 11 + l * 29) % 74)) * lt, A.faint);
+              bar(pane.r.x + 14, pane.r.y + 40 + l * 11, (30 + ((i * 11 + l * 29) % 62)) * lt, A.faint);
             }
           }
         });
+        void settle;
 
         const target = panes[1].r;
 
@@ -389,9 +525,9 @@ export default function StageCanvas() {
           const ch = 32;
           const cx =
             routed <= 0
-              ? lerp(-cw, SW / 2 - cw / 2, easeOut(inbound))
-              : lerp(SW / 2 - cw / 2, target.x + target.w / 2 - cw / 2, easeOut(routed));
-          const cy = routed <= 0 ? 130 : lerp(130, target.y - 26, easeOut(routed));
+              ? lerp(CLOUD.x - cw, CLOUD.x + CLOUD.w / 2 - cw / 2, easeOut(inbound))
+              : lerp(CLOUD.x + CLOUD.w / 2 - cw / 2, target.x + target.w / 2 - cw / 2, easeOut(routed));
+          const cy = routed <= 0 ? CLOUD.y + CLOUD.h / 2 : lerp(CLOUD.y + CLOUD.h / 2, target.y - 22, easeOut(routed));
           ctx.strokeStyle = c(A.line * 1.4);
           ctx.lineWidth = 1;
           ctx.beginPath();
@@ -504,7 +640,11 @@ export default function StageCanvas() {
 
         const a2 = act(p, 1);
         const a3 = act(p, 2);
-        if (a3 > 0) actThree(a3);
+        const a4 = act(p, 3);
+        const a5 = act(p, 4);
+        if (a5 > 0) actFive(a5);
+        else if (a4 > 0) actFour(a4);
+        else if (a3 > 0) actThree(a3);
         else if (a2 > 0) actTwo(a2);
         else actOne(act(p, 0));
 

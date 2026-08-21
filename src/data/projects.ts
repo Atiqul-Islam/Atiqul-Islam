@@ -93,9 +93,21 @@ export const ACTS = [
     body: "This is the part that is checkable rather than claimed: Genesis is self hosting, so an agent it produced turns around and uses Genesis to build the rest. Each new agent arrives with its own rules already compiled and its own memory that supersedes facts instead of deleting them.",
   },
   {
-    id: "act-task",
+    id: "act-deploy",
     label: "03",
+    title: "Then it goes somewhere real.",
+    body: "An agent system that only runs on a laptop has not been tested. This one ships to AWS on EKS with the same delivery every other service gets: versioned, promoted, health checked, and rollable back. Getting that part right is most of the work, and it is the part nobody notices when it is done well.",
+  },
+  {
+    id: "act-phone",
+    label: "04",
+    title: "Someone asks for something, from a phone.",
+    body: "No terminal, no dashboard, no ticket form. A message in a chat app people already have open. The agent reads it, works out what is actually being asked, and turns it into a task the system can route. The interface is the part that decides whether anyone uses it.",
+  },
+  {
+    id: "act-task",
+    label: "05",
     title: "An autonomous agentic system.",
-    body: "A task arrives and the supervisor routes it to whichever agent owns it. That agent writes the change, has a write denied by a rule it broke, cites the rule with evidence that resolves against the file, passes its tests, and merges. Nothing in that loop waits on a person, and nothing in it depends on the model choosing to behave.",
+    body: "The supervisor routes the task to whichever agent owns it. That agent writes the change, has a write denied by a rule it broke, cites the rule with evidence that resolves against the file, passes its tests, and merges. Nothing in that loop waits on a person, and nothing in it depends on the model choosing to behave.",
   },
 ];

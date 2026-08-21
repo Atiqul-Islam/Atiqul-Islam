@@ -95,11 +95,11 @@ export default function App() {
               key={a.id}
               id={a.id}
               className="relative flex min-h-[100svh] items-center"
-              data-drift={i % 2 === 0 ? "1" : "1.9"}
+              data-drift={["1", "1.9", "1.35", "2.1", "1.6"][i]}
             >
               <div className="mx-auto w-[min(100%-2.5rem,74rem)]">
                 <div className="max-w-[34rem] rounded-3xl border border-line bg-surface-lo/72 p-8 backdrop-blur-md sm:p-10">
-                  <p className="eyebrow tabular-nums">{a.label} / 03</p>
+                  <p className="eyebrow tabular-nums">{a.label} / 05</p>
                   <h2 className="wide mt-3 text-[clamp(1.7rem,1.2rem+2vw,2.9rem)]">{a.title}</h2>
                   <p className="mt-5 text-ink-dim">{a.body}</p>
                 </div>
