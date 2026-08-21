@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atiqul Islam</title>
+<meta name="description" content="I build the agent infrastructure other engineers ship on. Genesis, GraphCrew, vocalize, and the platform underneath.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232F6F5E'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='19' font-weight='700' fill='%23fff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<meta property="og:title" content="Atiqul Islam">
+<meta property="og:description" content="I build the agent infrastructure other engineers ship on.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+   Material Design 3 roles, expressed as tokens.
+
+   The tonal values are authored in oklch rather than hex so that a step from
+   one tone to the next is a perceptually even step. That is the whole premise
+   of an MD3 tonal palette, and hex cannot hold it: two hex values four points
+   apart in lightness look four different distances apart depending on hue.
+
+   Every surface and every colour that sits on it comes from this one block.
+   Nothing below redefines a colour inside a media query except the tokens.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* Seeded from the pine used in the Genesis deck, so the surfaces agree. */
+  --surface:              oklch(0.985 0.004 170);
+  --surface-container-lo: oklch(0.966 0.006 170);
+  --surface-container:    oklch(0.946 0.008 170);
+  --surface-container-hi: oklch(0.922 0.011 170);
+  --on-surface:           oklch(0.235 0.014 170);
+  --on-surface-variant:   oklch(0.455 0.013 170);
+  --outline:              oklch(0.640 0.012 170);
+  --outline-variant:      oklch(0.862 0.010 170);
+
+  --primary:              oklch(0.452 0.080 168);
+  --on-primary:           oklch(0.990 0.005 170);
+  --primary-container:    oklch(0.902 0.046 168);
+  --on-primary-container: oklch(0.262 0.052 168);
+
+  --tertiary:             oklch(0.498 0.086 72);
+  --tertiary-container:   oklch(0.906 0.055 78);
+  --on-tertiary-container:oklch(0.302 0.058 72);
+
+  /* Reserved for the deny state and nothing else. In his own work red
+     already means blocked, so spending it on decoration would misread. */
+  --deny:                 oklch(0.482 0.148 25);
+  --deny-container:       oklch(0.912 0.046 25);
+  --on-deny-container:    oklch(0.302 0.092 25);
+
+  --shadow: 0 1px 2px oklch(0.235 0.014 170 / 0.10),
+            0 4px 14px oklch(0.235 0.014 170 / 0.06);
+
+  /* MD3 shape scale */
+  --r-xs: 4px;  --r-s: 8px;  --r-m: 12px;  --r-l: 16px;  --r-xl: 28px;
+
+  --measure: 66ch;
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+
+  --sans: "Archivo", ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* System dark, unless the reader has explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface:              oklch(0.178 0.010 170);
+    --surface-container-lo: oklch(0.212 0.012 170);
+    --surface-container:    oklch(0.243 0.013 170);
+    --surface-container-hi: oklch(0.283 0.015 170);
+    --on-surface:           oklch(0.922 0.008 170);
+    --on-surface-variant:   oklch(0.752 0.013 170);
+    --outline:              oklch(0.560 0.013 170);
+    --outline-variant:      oklch(0.378 0.013 170);
+
+    --primary:              oklch(0.802 0.082 168);
+    --on-primary:           oklch(0.238 0.056 168);
+    --primary-container:    oklch(0.342 0.062 168);
+    --on-primary-container: oklch(0.884 0.060 168);
+
+    --tertiary:             oklch(0.822 0.080 78);
+    --tertiary-container:   oklch(0.358 0.056 75);
+    --on-tertiary-container:oklch(0.902 0.055 78);
+
+    --deny:                 oklch(0.752 0.112 25);
+    --deny-container:       oklch(0.352 0.092 25);
+    --on-deny-container:    oklch(0.902 0.050 25);
+
+    --shadow: 0 1px 2px oklch(0.08 0 0 / 0.5), 0 6px 20px oklch(0.08 0 0 / 0.35);
+  }
+}
+
+/* Explicit dark choice wins over a light OS. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface:              oklch(0.178 0.010 170);
+  --surface-container-lo: oklch(0.212 0.012 170);
+  --surface-container:    oklch(0.243 0.013 170);
+  --surface-container-hi: oklch(0.283 0.015 170);
+  --on-surface:           oklch(0.922 0.008 170);
+  --on-surface-variant:   oklch(0.752 0.013 170);
+  --outline:              oklch(0.560 0.013 170);
+  --outline-variant:      oklch(0.378 0.013 170);
+
+  --primary:              oklch(0.802 0.082 168);
+  --on-primary:           oklch(0.238 0.056 168);
+  --primary-container:    oklch(0.342 0.062 168);
+  --on-primary-container: oklch(0.884 0.060 168);
+
+  --tertiary:             oklch(0.822 0.080 78);
+  --tertiary-container:   oklch(0.358 0.056 75);
+  --on-tertiary-container:oklch(0.902 0.055 78);
+
+  --deny:                 oklch(0.752 0.112 25);
+  --deny-container:       oklch(0.352 0.092 25);
+  --on-deny-container:    oklch(0.902 0.050 25);
+
+  --shadow: 0 1px 2px oklch(0.08 0 0 / 0.5), 0 6px 20px oklch(0.08 0 0 / 0.35);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--sans);
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.075rem);
+  line-height: 1.62;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The width axis is the characterful move. Display type runs expanded and
+   tight; body type stays at normal width so it reads long. */
+h1, h2, h3, .display {
+  font-variation-settings: "wdth" 118;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.08;
+  text-wrap: balance;
+  margin: 0;
+}
+p { text-wrap: pretty; margin: 0; }
+
+a { color: var(--primary); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+
+.skip {
+  position: absolute; left: 0.75rem; top: -4rem; z-index: 20;
+  background: var(--primary); color: var(--on-primary);
+  padding: 0.7rem 1.1rem; border-radius: var(--r-s);
+  font-weight: 600; text-decoration: none;
+  transition: top 160ms var(--ease);
+}
+.skip:focus { top: 0.75rem; }
+
+.wrap {
+  width: min(100% - var(--gutter) * 2, 74rem);
+  margin-inline: auto;
+}
+
+/* ── Eyebrow labels ──────────────────────────────────────────────────────
+   Mono, because every label on this page is a real identifier from the work:
+   a rule ID, a status from the fixed vocabulary, a package name. */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+  margin: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header.bar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.bar-in {
+  display: flex; align-items: center; gap: 1rem;
+  min-height: 4rem;
+}
+.brand {
+  font-variation-settings: "wdth" 118;
+  font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em;
+  color: var(--on-surface); text-decoration: none;
+  margin-right: auto;
+}
+nav.links { display: flex; gap: 0.35rem; }
+nav.links a {
+  color: var(--on-surface-variant); text-decoration: none;
+  font-size: 0.9rem; font-weight: 500;
+  padding: 0.5rem 0.75rem; border-radius: var(--r-s);
+  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+}
+nav.links a:hover {
+  color: var(--on-surface);
+  background: color-mix(in oklab, var(--on-surface) 8%, transparent);
+}
+@media (max-width: 46rem) { nav.links { display: none; } }
+
+/* MD3 icon button with a real state layer */
+.icon-btn {
+  inline-size: 2.5rem; block-size: 2.5rem;
+  display: grid; place-items: center;
+  border: 1px solid var(--outline-variant);
+  border-radius: 50%;
+  background: transparent; color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+}
+.icon-btn:hover {
+  background: color-mix(in oklab, var(--on-surface) 8%, transparent);
+  color: var(--on-surface);
+}
+.icon-btn svg { inline-size: 1.15rem; block-size: 1.15rem; fill: currentColor; }
+[data-theme="dark"] .sun, :root:not([data-theme="light"]) .sun { display: none; }
+[data-theme="dark"] .moon, :root:not([data-theme="light"]) .moon { display: block; }
+.moon { display: none; }
+[data-theme="light"] .sun { display: block; }
+[data-theme="light"] .moon { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .sun { display: block; }
+  :root:not([data-theme="dark"]) .moon { display: none; }
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero { padding-block: clamp(3.5rem, 9vw, 7rem) clamp(2.5rem, 6vw, 4.5rem); }
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+@media (min-width: 62rem) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 27rem); }
+}
+
+/* Capped well below the width the fluid curve would reach on a wide screen.
+   At 5rem this sentence broke to five lines and stopped reading as a
+   sentence; the reader saw a wall of letterforms and had to assemble it. */
+h1 {
+  font-size: clamp(2.15rem, 1.5rem + 2.5vw, 3.55rem);
+  font-variation-settings: "wdth" 122;
+  max-width: 17ch;
+  margin-block: 0.7rem 0;
+}
+.lede {
+  font-size: clamp(1.15rem, 1.02rem + 0.6vw, 1.45rem);
+  color: var(--on-surface-variant);
+  max-width: 34ch;
+  margin-top: 1.25rem;
+  line-height: 1.45;
+}
+.hero p.sub { margin-top: 1.5rem; max-width: 52ch; color: var(--on-surface-variant); }
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.72rem 1.4rem; border-radius: 999px;
+  font-weight: 600; font-size: 0.95rem; text-decoration: none;
+  border: 1px solid transparent; cursor: pointer;
+  transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+.btn-filled { background: var(--primary); color: var(--on-primary); }
+.btn-filled:hover { box-shadow: var(--shadow); background: color-mix(in oklab, var(--primary) 92%, var(--on-surface)); }
+.btn-out { border-color: var(--outline); color: var(--on-surface); }
+.btn-out:hover { background: color-mix(in oklab, var(--on-surface) 8%, transparent); }
+
+/* ── The enforcement panel: the thesis, not an illustration of it ───────── */
+.panel {
+  background: var(--surface-container-lo);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--r-xl);
+  padding: 1.5rem;
+  container-type: inline-size;
+}
+.panel-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.panel-head .eyebrow { margin-right: auto; }
+
+.seg {
+  display: inline-flex; padding: 3px;
+  background: var(--surface-container);
+  border-radius: 999px; border: 1px solid var(--outline-variant);
+}
+.seg button {
+  font: inherit; font-size: 0.82rem; font-weight: 600;
+  padding: 0.38rem 0.85rem; border: 0; border-radius: 999px;
+  background: transparent; color: var(--on-surface-variant); cursor: pointer;
+  transition: background-color 180ms var(--ease), color 180ms var(--ease);
+}
+.seg button[aria-pressed="true"] {
+  background: var(--primary-container); color: var(--on-primary-container);
+}
+
+.steps { display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.step {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr auto;
+  align-items: center; gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--r-m);
+  font-family: var(--mono); font-size: 0.8rem;
+  color: var(--on-surface-variant);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: rise 380ms var(--ease) forwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+.step .n { color: var(--outline); font-size: 0.72rem; }
+.step .what { color: var(--on-surface); overflow-wrap: anywhere; }
+
+.tag {
+  font-family: var(--mono); font-size: 0.66rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.22rem 0.5rem; border-radius: var(--r-xs); white-space: nowrap;
+}
+.tag-ok   { background: var(--primary-container);  color: var(--on-primary-container); }
+.tag-deny { background: var(--deny-container);     color: var(--on-deny-container); }
+.tag-warn { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+
+.step.is-deny { border-color: color-mix(in oklab, var(--deny) 45%, var(--outline-variant)); }
+.step.is-drift { border-style: dashed; }
+
+.verdict {
+  margin-top: 1rem; padding: 0.9rem 1rem;
+  border-radius: var(--r-m); font-size: 0.9rem; line-height: 1.5;
+}
+.verdict.ok   { background: var(--primary-container); color: var(--on-primary-container); }
+.verdict.bad  { background: var(--tertiary-container); color: var(--on-tertiary-container); }
+.verdict strong { font-variation-settings: "wdth" 112; }
+
+/* Only drop the tag onto its own row when it genuinely cannot sit beside the
+   step text. At 26rem this fired while there was still room, and every step
+   grew a second line for no reason. */
+@container (max-width: 21rem) {
+  .step { grid-template-columns: 1.4rem 1fr; row-gap: 0.4rem; }
+  .step .tag { grid-column: 2; justify-self: start; }
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+section { padding-block: clamp(3rem, 7vw, 5.5rem); }
+section + section { border-top: 1px solid var(--outline-variant); }
+.sec-head { max-width: var(--measure); margin-bottom: clamp(2rem, 4vw, 3rem); }
+.sec-head h2 {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.7rem);
+  margin-top: 0.6rem;
+}
+.sec-head p { margin-top: 1rem; color: var(--on-surface-variant); }
+
+/* ── Project cards ──────────────────────────────────────────────────────── */
+.cards { display: grid; gap: 1.25rem; }
+@media (min-width: 56rem) { .cards { grid-template-columns: repeat(3, 1fr); } }
+
+.card {
+  display: flex; flex-direction: column; gap: 0.9rem;
+  padding: 1.6rem;
+  background: var(--surface-container-lo);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--r-xl);
+  container-type: inline-size;
+  transition: background-color 180ms var(--ease), border-color 180ms var(--ease), transform 180ms var(--ease);
+}
+.card:hover {
+  background: var(--surface-container);
+  border-color: var(--outline);
+  transform: translateY(-3px);
+}
+.card-top { display: flex; align-items: center; gap: 0.65rem; }
+.card h3 {
+  font-family: var(--mono); font-size: 1.18rem; font-weight: 700;
+  font-variation-settings: normal; letter-spacing: -0.01em;
+  margin-right: auto;
+}
+.card .role { color: var(--on-surface-variant); font-size: 0.94rem; flex: 1; }
+.card .role strong { color: var(--on-surface); font-weight: 600; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip {
+  font-family: var(--mono); font-size: 0.7rem;
+  padding: 0.28rem 0.6rem; border-radius: 999px;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+}
+
+/* Wrap rather than scroll. A clipped install command reads as a broken card,
+   and a horizontal scrollbar inside a narrow column is worse: the reader has
+   no reason to suspect there is more text to find. */
+pre.cmd {
+  margin: 0; padding: 0.8rem 0.95rem;
+  background: var(--surface-container-hi);
+  border-radius: var(--r-s);
+  font-family: var(--mono); font-size: 0.78rem; line-height: 1.7;
+  color: var(--on-surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+pre.cmd .p { color: var(--on-surface-variant); user-select: none; }
+
+.card-links { display: flex; gap: 1rem; margin-top: auto; padding-top: 0.4rem; font-size: 0.9rem; font-weight: 600; }
+
+/* ── Work ───────────────────────────────────────────────────────────────── */
+.work { display: grid; gap: 1.25rem; }
+@media (min-width: 56rem) { .work { grid-template-columns: repeat(3, 1fr); } }
+.work-item {
+  padding: 1.5rem;
+  background: var(--surface-container-lo);
+  border-radius: var(--r-l);
+  border: 1px solid var(--outline-variant);
+}
+.work-item h3 { font-size: 1.1rem; margin-bottom: 0.6rem; }
+.work-item p { color: var(--on-surface-variant); font-size: 0.95rem; }
+
+/* ── Stack ──────────────────────────────────────────────────────────────── */
+.stack { display: grid; gap: 1.75rem 3rem; }
+@media (min-width: 44rem) { .stack { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 70rem) { .stack { grid-template-columns: repeat(4, 1fr); } }
+.stack dt { margin-bottom: 0.7rem; }
+.stack dd { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+footer { border-top: 1px solid var(--outline-variant); padding-block: 3.5rem 4rem; }
+.foot { display: flex; flex-wrap: wrap; gap: 2rem; align-items: end; }
+.foot .avail { max-width: 40ch; color: var(--on-surface-variant); margin-top: 0.9rem; }
+.foot-links { display: flex; gap: 1.25rem; margin-left: auto; font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+  .step { opacity: 1; transform: none; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="brand" href="#top">Atiqul Islam</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#open-source">Open source</a>
+      <a href="#work">At work</a>
+      <a href="#stack">Stack</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-13.2a1 1 0 0 1-1-1V1.5a1 1 0 1 1 2 0v1.3a1 1 0 0 1-1 1Zm0 19.7a1 1 0 0 1-1-1v-1.3a1 1 0 1 1 2 0v1.3a1 1 0 0 1-1 1ZM3.8 12a1 1 0 0 1-1 1H1.5a1 1 0 1 1 0-2h1.3a1 1 0 0 1 1 1Zm19.7 0a1 1 0 0 1-1 1h-1.3a1 1 0 1 1 0-2h1.3a1 1 0 0 1 1 1ZM5.6 6.98a1 1 0 0 1-1.41 0l-.92-.92A1 1 0 0 1 4.68 4.6l.92.92a1 1 0 0 1 0 1.46Zm14.13 14.13a1 1 0 0 1-1.41 0l-.92-.92a1 1 0 0 1 1.41-1.41l.92.92a1 1 0 0 1 0 1.41ZM4.68 21.11a1 1 0 0 1 0-1.41l.92-.92A1 1 0 0 1 7.01 20.2l-.92.92a1 1 0 0 1-1.41 0ZM18.4 6.98a1 1 0 0 1 0-1.41l.92-.92a1 1 0 1 1 1.41 1.41l-.92.92a1 1 0 0 1-1.41 0Z"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.3 14.5A9.2 9.2 0 0 1 9.5 2.7a1 1 0 0 0-1.3-1.2A10.9 10.9 0 1 0 22.5 15.8a1 1 0 0 0-1.2-1.3Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+  <div id="top" class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Agent infrastructure · St. John's, Canada</p>
+        <h1>I build the agent infrastructure other engineers ship on.</h1>
+        <p class="lede">An agent can hold your instruction in its context and still not follow it.</p>
+        <p class="sub">
+          Holding a rule and applying one are different things, and the gap widens the longer a
+          session runs. So I stopped asking, and built enforcement that runs outside the model.
+          The panel beside this is the difference, and it is the same mechanism that ships in
+          Genesis.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-filled" href="#open-source">See the work</a>
+          <a class="btn btn-out" href="https://github.com/Atiqul-Islam">GitHub</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <p class="eyebrow">One agent, one rule</p>
+          <div class="seg" role="group" aria-label="Enforcement mode">
+            <button type="button" data-mode="prompted" aria-pressed="false">Prompted</button>
+            <button type="button" data-mode="enforced" aria-pressed="true">Enforced</button>
+          </div>
+        </div>
+
+        <ol class="steps" id="steps" aria-live="polite"></ol>
+        <div class="verdict" id="verdict"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="open-source">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Published, MIT, and readable</p>
+        <h2>Three things you can run today</h2>
+        <p>
+          Every claim on this page has code behind it. These are the three you can clone and
+          check yourself, with their real status rather than a launch adjective.
+        </p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-top">
+            <h3>genesis</h3>
+            <span class="tag tag-ok">Beta</span>
+          </div>
+          <p class="role">
+            <strong>An agent builder that makes an agent provably apply its expertise.</strong>
+            Rules carry stable IDs. The checkable ones compile into fail closed hooks that deny a
+            write breaking one, and refuse to let the agent finish until it cites the rules it
+            applied with evidence. It is self hosting: its own agents build it.
+          </p>
+          <div class="chips">
+            <span class="chip">Rust</span><span class="chip">MCP server</span>
+            <span class="chip">ONNX</span><span class="chip">SQLite vector search</span>
+            <span class="chip">17 releases</span>
+          </div>
+          <pre class="cmd"><span class="p">$</span> /plugin marketplace add Atiqul-Islam/genesis
+<span class="p">$</span> /plugin install genesis@genesis</pre>
+          <div class="card-links">
+            <a href="https://github.com/Atiqul-Islam/genesis">Code</a>
+            <a href="https://atiqul-islam.github.io/genesis/">Docs</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-top">
+            <h3>graphcrew</h3>
+            <span class="tag tag-ok">Beta</span>
+          </div>
+          <p class="role">
+            <strong>LangGraph with the best practices already in place.</strong>
+            LangGraph gives you the graph. It does not decide how much context each agent gets,
+            when to evict a knowledge slot, or how to stop one tenant spending another tenant's
+            budget. GraphCrew ships those as defaults so you do not solve them again.
+          </p>
+          <div class="chips">
+            <span class="chip">Python</span><span class="chip">Tiered slots</span>
+            <span class="chip">Token budget</span><span class="chip">OpenTelemetry</span>
+            <span class="chip">Sole author</span>
+          </div>
+          <pre class="cmd"><span class="p">$</span> pip install graphcrew</pre>
+          <div class="card-links">
+            <a href="https://github.com/Atiqul-Islam/graphcrew">Code</a>
+            <a href="https://pypi.org/project/graphcrew/">PyPI</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-top">
+            <h3>vocalize</h3>
+            <span class="tag tag-warn">Active development</span>
+          </div>
+          <p class="role">
+            <strong>Offline text to speech.</strong>
+            ONNX Runtime and the Kokoro model in Rust, exposed to Python through PyO3. No network
+            call and no third party speech API. The work covers the inference path end to end,
+            from model loading and tokenisation through synthesis to the binding layer.
+          </p>
+          <div class="chips">
+            <span class="chip">Rust</span><span class="chip">ONNX Runtime</span>
+            <span class="chip">PyO3</span><span class="chip">Fully offline</span>
+          </div>
+          <div class="card-links">
+            <a href="https://github.com/Atiqul-Islam/vocalize">Code</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Instrumar · since 2022</p>
+        <h2>What I own at work</h2>
+        <p>
+          The open source is the part you can read. This is the part that runs a plant, described
+          without naming a customer or linking code that is not mine to link.
+        </p>
+      </div>
+
+      <div class="work">
+        <div class="work-item">
+          <h3>Non programmers shipping models</h3>
+          <p>
+            I built a zero code workflow that lets analysts and systems engineers, people who do
+            not write code, build, validate and ship production models themselves. Some of the
+            models built through it run in production today. The rest are built and in testing.
+            The outcome is the point: domain experts ship without a developer in the loop.
+          </p>
+        </div>
+        <div class="work-item">
+          <h3>The platform underneath</h3>
+          <p>
+            A private Kubernetes cluster on Apache CloudStack, Cluster API, that I specified,
+            built and operate. Hardware, network architecture, deployment and production
+            operations, with GitOps delivery, automated promotion and rollback, and release
+            auditability. A parallel AWS cluster benchmarked cost against performance.
+          </p>
+        </div>
+        <div class="work-item">
+          <h3>Context engineering, in production</h3>
+          <p>
+            A production agentic analytics product for plant operations, full stack, with a
+            supervisor routing four specialist agents on LangGraph. I engineered its context
+            management: knowledge modules loaded on demand instead of carried, a token budget
+            split so the stable prompt stays cached, and history compaction that keeps metadata
+            and drops payload until a result is actually needed.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">What I reach for</p>
+        <h2>Stack</h2>
+      </div>
+      <dl class="stack">
+        <div>
+          <dt class="eyebrow">Languages</dt>
+          <dd class="chips">
+            <span class="chip">Rust</span><span class="chip">Python</span>
+            <span class="chip">Go</span><span class="chip">TypeScript</span>
+            <span class="chip">C#</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Agents and LLM</dt>
+          <dd class="chips">
+            <span class="chip">LangGraph</span><span class="chip">MCP</span>
+            <span class="chip">Context engineering</span><span class="chip">ReAct</span>
+            <span class="chip">RAG</span><span class="chip">Evaluation</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Platform</dt>
+          <dd class="chips">
+            <span class="chip">Kubernetes</span><span class="chip">Cluster API</span>
+            <span class="chip">Apache CloudStack</span><span class="chip">AWS</span>
+            <span class="chip">Helm</span><span class="chip">Kustomize</span>
+          </dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Data and ops</dt>
+          <dd class="chips">
+            <span class="chip">PostgreSQL</span><span class="chip">TimescaleDB</span>
+            <span class="chip">Apache Pulsar</span><span class="chip">Trino</span>
+            <span class="chip">Prometheus</span><span class="chip">OpenTelemetry</span>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap foot">
+    <div>
+      <p class="eyebrow">Open to work</p>
+      <h2 style="font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.2rem); margin-top: 0.6rem;">
+        Remote anywhere, or on site in Canada.
+      </h2>
+      <p class="avail">
+        Full time, contract or consulting. AI engineering, LLM engineering, MLOps and platform
+        engineering. B.Eng Computer Engineering, Memorial University of Newfoundland.
+      </p>
+    </div>
+    <div class="foot-links">
+      <a href="https://github.com/Atiqul-Islam">GitHub</a>
+      <a href="https://www.linkedin.com/in/atiqul-islam-3218851b5/">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  /* Theme toggle. Reads the resolved theme first so the first click always
+     flips what the reader is actually looking at, rather than assuming light. */
+  const root = document.documentElement;
+  const toggle = document.getElementById("theme");
+  toggle.addEventListener("click", () => {
+    const dark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+  });
+
+  /* The enforcement panel.
+
+     Both runs are the same agent under the same instruction. The only
+     difference is whether the rule is asked for or enforced, which is the
+     entire argument the page is making. */
+  const RUNS = {
+    prompted: {
+      steps: [
+        { what: "read  portfolio-truth.md", tag: "ok",   cls: "tag-ok" },
+        { what: "rule pt-3 in context",     tag: "held", cls: "tag-ok" },
+        { what: "… 40 turns later …",       tag: "",     cls: "", drift: true },
+        { what: "write resume.md",          tag: "wrote", cls: "tag-warn" }
+      ],
+      verdict: {
+        cls: "bad",
+        html: "<strong>Shipped without the status label.</strong> The rule was in context the whole time. Nothing checked whether it was applied, so nothing said otherwise."
+      }
+    },
+    enforced: {
+      steps: [
+        { what: "inject pt-3 before work",  tag: "hook", cls: "tag-ok" },
+        { what: "rule pt-3 in context",     tag: "held", cls: "tag-ok" },
+        { what: "… 40 turns later …",       tag: "",     cls: "", drift: true },
+        { what: "write resume.md",          tag: "denied", cls: "tag-deny", deny: true },
+        { what: "cite pt-3 + evidence",     tag: "pass", cls: "tag-ok" }
+      ],
+      verdict: {
+        cls: "ok",
+        html: "<strong>The write was denied, not discouraged.</strong> A fail closed hook ran outside the model, and the agent could not finish until it cited the rule it applied with evidence."
+      }
+    }
+  };
+
+  const list = document.getElementById("steps");
+  const verdict = document.getElementById("verdict");
+  const buttons = [...document.querySelectorAll(".seg button")];
+
+  function render(mode) {
+    const run = RUNS[mode];
+    list.replaceChildren();
+
+    run.steps.forEach((s, i) => {
+      const li = document.createElement("li");
+      li.className = "step" + (s.deny ? " is-deny" : "") + (s.drift ? " is-drift" : "");
+      li.style.setProperty("--i", i);
+
+      const n = document.createElement("span");
+      n.className = "n";
+      n.textContent = s.drift ? "" : String(i + 1).padStart(2, "0");
+
+      const what = document.createElement("span");
+      what.className = "what";
+      what.textContent = s.what;
+
+      li.append(n, what);
+
+      if (s.tag) {
+        const tag = document.createElement("span");
+        tag.className = "tag " + s.cls;
+        tag.textContent = s.tag;
+        li.append(tag);
+      }
+      list.append(li);
+    });
+
+    verdict.className = "verdict " + run.verdict.cls;
+    verdict.innerHTML = run.verdict.html;
+
+    buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+  }
+
+  buttons.forEach(b => b.addEventListener("click", () => render(b.dataset.mode)));
+  render("enforced");
+})();
+</script>
+</body>
+</html>
