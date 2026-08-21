@@ -819,10 +819,15 @@ export default function StageCanvas() {
             ? (h - drawn) / 2
             : Math.min(Math.max(anchor.current - drawn / 2, 8), h - drawn - 8);
 
+        // A scene needs a lane, and a narrow screen has none: the cards stack
+        // full width, so the scene draws behind them and leaks out between the
+        // rows as stray box edges. On narrow the ambient lattice carries the
+        // background on its own.
+        if (narrow) return;
+
         ctx.save();
         ctx.translate(ox, oy);
         ctx.scale(scale, scale);
-        ctx.globalAlpha = narrow ? 0.46 : 1;
 
         switch (scene.current) {
           case "embedded":

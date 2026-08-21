@@ -7,16 +7,19 @@
  * through the CDP harness land mid animation because nothing waits; a real
  * browser with real waits is the only way to see what a reader sees.
  *
- *   node filmstrip.mjs <url> <outDir> [frames] [theme]
+ *   node filmstrip.mjs <url> <outDir> [frames] [theme] [width] [height]
  */
 import { chromium } from "playwright";
 import { mkdir } from "node:fs/promises";
 
-const [url, outDir, frames = "8", theme = "dark"] = process.argv.slice(2);
+const [url, outDir, frames = "8", theme = "dark", w = "1440", h = "900"] = process.argv.slice(2);
 await mkdir(outDir, { recursive: true });
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const page = await browser.newPage({
+  viewport: { width: Number(w), height: Number(h) },
+  deviceScaleFactor: 2,
+});
 await page.goto(url, { waitUntil: "networkidle" });
 await page.evaluate((t) => (document.documentElement.dataset.theme = t), theme);
 await page.waitForTimeout(1200);
