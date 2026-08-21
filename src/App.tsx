@@ -94,7 +94,7 @@ export default function App() {
             <div
               key={a.id}
               id={a.id}
-              className="relative flex min-h-[100svh] items-center"
+              className="relative flex min-h-[76svh] items-center"
               data-drift={["1", "1.9", "1.35", "2.1", "1.6"][i]}
             >
               <div className="mx-auto w-[min(100%-2.5rem,74rem)]">

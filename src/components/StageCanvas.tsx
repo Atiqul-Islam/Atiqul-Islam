@@ -36,8 +36,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * composition cannot drift apart at an unusual window size.
  */
 
-const SW = 640;
-const SH = 420;
+const SW = 520;
+const SH = 520;
 const ACT_COUNT = 5;
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(Math.max(v, a), b);
@@ -59,15 +59,17 @@ const INSTALL = [
     The system keeps the same three boxes the whole way through; only the frame
     around them changes. */
 const SLOTS = [
-  { name: "method", x: 24, deployX: 158 },
-  { name: "mneme", x: 245, deployX: 318 },
-  { name: "atlas", x: 466, deployX: 478 },
+  { name: "method", x: 8, deployX: 38 },
+  { name: "mneme", x: 184, deployX: 200 },
+  { name: "atlas", x: 360, deployX: 362 },
 ];
 
 // The deployed frame, and the phone that talks to what is inside it.
-const CLOUD = { x: 142, y: 26, w: 494, h: 286 };
-const SUP_DEPLOYED = { x: 158, y: 46, w: 462, h: 46 };
-const PHONE = { x: 10, y: 96, w: 104, h: 196 };
+const CLOUD = { x: 16, y: 34, w: 488, h: 340 };
+const SUP_DEPLOYED = { x: 36, y: 58, w: 448, h: 48 };
+// Act IV gives the phone the whole stage, so it is drawn at a size a reader
+// can actually read the conversation in.
+const PHONE = { x: 146, y: 46, w: 228, h: 420 };
 
 const DIFF = [
   { sign: "+", w: 80 },
@@ -77,10 +79,10 @@ const DIFF = [
 ];
 
 // The boxes the scene lerps between, so nothing ever cuts.
-const TERM_BIG = { x: 46, y: 60, w: 418, h: 196 };
-const TERM_SMALL = { x: 24, y: 40, w: 214, h: 56 };
-const AGENT_BORN = { x: 250, y: 290, w: 178, h: 78 };
-const AGENT_BUILDER = { x: 262, y: 40, w: 178, h: 56 };
+const TERM_BIG = { x: 34, y: 96, w: 452, h: 214 };
+const TERM_SMALL = { x: 20, y: 40, w: 220, h: 56 };
+const AGENT_BORN = { x: 158, y: 350, w: 204, h: 86 };
+const AGENT_BUILDER = { x: 158, y: 40, w: 204, h: 56 };
 
 type Rect = { x: number; y: number; w: number; h: number };
 const between = (a: Rect, b: Rect, t: number): Rect => ({
@@ -313,9 +315,9 @@ export default function StageCanvas() {
         SLOTS.forEach((slot, i) => {
           const t = beat(p, 0.32 + i * 0.15, 0.62 + i * 0.15);
           if (t <= 0) return;
-          const childY = 200;
+          const childY = 236;
           const grown = easeOut(t);
-          const child: Rect = { x: slot.x, y: childY, w: 150, h: 92 };
+          const child: Rect = { x: slot.x, y: childY, w: 152, h: 104 };
 
           link(
             builder.x + builder.w / 2,
@@ -327,15 +329,15 @@ export default function StageCanvas() {
           agentCard({ ...child, h: child.h * grown }, slot.name, grown);
 
           const chipT = beat(t, 0.55, 0.92);
-          chip("pt-3", child.x + 14, childY + 60, chipT);
-          chip("ecf-5", child.x + 74, childY + 60, chipT);
+          chip("pt-3", child.x + 12, childY + 66, chipT);
+          chip("ecf-5", child.x + 72, childY + 66, chipT);
           if (t >= 1) check(child.x + child.w - 18, childY + 20, A.text);
         });
 
         // Said out loud, so the recursion is legible rather than implied.
         const note = beat(p, 0.72, 0.94);
         if (note > 0) {
-          label("genesis builds the agents that build with genesis", 24, SH - 44, 10.5, A.dim * note);
+          label("genesis builds the agents that build with genesis", 12, SH - 34, 10.5, A.dim * note);
         }
       }
 
@@ -368,9 +370,9 @@ export default function StageCanvas() {
           name: slot.name,
           r: {
             x: lerp(slot.x, slot.deployX, deployT),
-            y: lerp(200, 132, deployT),
-            w: lerp(150, 144, deployT),
-            h: lerp(92, 104, deployT),
+            y: lerp(236, 158, deployT),
+            w: lerp(152, 140, deployT),
+            h: lerp(104, 122, deployT),
           } as Rect,
         }));
 
@@ -424,68 +426,94 @@ export default function StageCanvas() {
         }
       }
 
-      /* ── Act IV: a person asks for something from their phone ───────────── */
-      function actFour(p: number) {
-        system(1, { cloud: 1 });
-        cloudLabel(1);
-
-        const slide = easeOut(beat(p, 0, 0.2));
-        if (slide <= 0) return;
-        const ph: Rect = {
-          x: lerp(-PHONE.w, PHONE.x, slide),
-          y: PHONE.y,
-          w: PHONE.w,
-          h: PHONE.h,
-        };
-        panel(ph, 1, 14);
-        // Speaker slot, so it reads as a phone and not a card.
-        ctx.strokeStyle = c(A.line);
-        ctx.lineWidth = 1.4;
+      /** The phone, drawn at whatever offset act IV or act V needs. */
+      function phone(dx: number, a: number, p: number) {
+        if (a <= 0) return;
+        const ph: Rect = { x: PHONE.x + dx, y: PHONE.y, w: PHONE.w, h: PHONE.h };
+        panel(ph, a, 22);
+        ctx.strokeStyle = c(A.line * a);
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.moveTo(ph.x + ph.w / 2 - 10, ph.y + 12);
-        ctx.lineTo(ph.x + ph.w / 2 + 10, ph.y + 12);
+        ctx.moveTo(ph.x + ph.w / 2 - 16, ph.y + 16);
+        ctx.lineTo(ph.x + ph.w / 2 + 16, ph.y + 16);
         ctx.stroke();
 
-        // Their message, then the agent's reply.
-        const ask = beat(p, 0.22, 0.5);
+        // Conversation header, so it reads as a chat app and not a form.
+        ctx.strokeStyle = c(A.line * 0.7 * a);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(ph.x, ph.y + 54);
+        ctx.lineTo(ph.x + ph.w, ph.y + 54);
+        ctx.stroke();
+        ctx.fillStyle = c(A.line * 1.2 * a);
+        ctx.beginPath();
+        ctx.arc(ph.x + 26, ph.y + 36, 8, 0, Math.PI * 2);
+        ctx.fill();
+        label("sensei", ph.x + 42, ph.y + 36, 11, A.text * a);
+
+        const L = ph.x + 16;
+        const R = ph.x + ph.w - 16;
+
+        // Their message, right aligned and filled, the way a sent message reads.
+        const ask = beat(p, 0.18, 0.46);
         if (ask > 0) {
-          ctx.strokeStyle = c(A.line * 1.2 * ask);
+          const bw = 172;
+          const bx = R - bw;
+          ctx.fillStyle = c(A.line * 0.55 * a * ask);
+          ctx.beginPath();
+          ctx.roundRect(bx, ph.y + 76, bw, 56, 12);
+          ctx.fill();
+          typed("the weekly report", bx + 12, ph.y + 96, 10.5, beat(ask, 0, 0.55), A.text * a);
+          typed("is stale", bx + 12, ph.y + 114, 10.5, beat(ask, 0.5, 1), A.text * a);
+        }
+
+        // The agent answering, left aligned and outlined.
+        const reply = beat(p, 0.44, 0.74);
+        if (reply > 0) {
+          const bw = 186;
+          ctx.strokeStyle = c(A.line * 1.3 * a * reply);
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(ph.x + 10, ph.y + 30, 74, 42, 8);
+          ctx.roundRect(L, ph.y + 148, bw, 74, 12);
           ctx.stroke();
-          typed("the report", ph.x + 17, ph.y + 44, 9, beat(ask, 0, 0.55), A.text);
-          typed("is stale", ph.x + 17, ph.y + 58, 9, beat(ask, 0.5, 1), A.text);
+          typed("source table stopped", L + 12, ph.y + 168, 10.5, beat(reply, 0, 0.5), A.text * 0.92 * a);
+          typed("updating on friday.", L + 12, ph.y + 186, 10.5, beat(reply, 0.35, 0.8), A.text * 0.92 * a);
+          typed("i'll take it.", L + 12, ph.y + 204, 10.5, beat(reply, 0.7, 1), A.text * 0.92 * a);
         }
 
-        const reply = beat(p, 0.5, 0.78);
-        if (reply > 0) {
-          ctx.fillStyle = c(A.line * 0.5 * reply);
+        // It becomes a task, in the conversation, where they can see it.
+        const made = beat(p, 0.74, 0.94);
+        if (made > 0) {
+          ctx.strokeStyle = c(A.line * 1.6 * a * made);
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.roundRect(ph.x + 22, ph.y + 84, 72, 36, 8);
-          ctx.fill();
-          typed("on it —", ph.x + 29, ph.y + 96, 9, beat(reply, 0, 0.5), A.text * 0.9);
-          typed("TASK-418", ph.x + 29, ph.y + 110, 9, beat(reply, 0.45, 1), A.text * 0.9);
-        }
-
-        // The message becomes a task and heads for the system.
-        const send = beat(p, 0.78, 1);
-        if (send > 0) {
-          const fromX = ph.x + ph.w;
-          const fromY = ph.y + 102;
-          const toX = CLOUD.x;
-          const toY = CLOUD.y + CLOUD.h / 2;
-          ctx.strokeStyle = c(A.line * 1.2 * send);
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.moveTo(fromX, fromY);
-          ctx.lineTo(lerp(fromX, toX, easeOut(send)), lerp(fromY, toY, easeOut(send)));
+          ctx.roundRect(L, ph.y + 238, 150, 38, 8);
           ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = c(A.text * send);
-          ctx.beginPath();
-          ctx.arc(lerp(fromX, toX, easeOut(send)), lerp(fromY, toY, easeOut(send)), 3.4, 0, Math.PI * 2);
-          ctx.fill();
+          label("TASK-418", L + 12, ph.y + 252, 10.5, A.text * a * made);
+          bar(L + 12, ph.y + 264, 96 * made, A.dim * a);
+          check(L + 132, ph.y + 252, A.text * a * beat(made, 0.6, 1));
+        }
+      }
+
+      /* ── Act IV: a person asks for something, from their phone ───────────
+         The phone has the stage to itself. Putting the system beside it split
+         the reader's attention across two things that happen at different
+         times, and neither one landed. */
+      function actFour(p: number) {
+        const slide = easeOut(beat(p, 0, 0.18));
+        const leaving = beat(p, 0.9, 1);
+        phone(lerp(-SW, 0, slide) + lerp(0, -SW * 0.55, easeOut(leaving)), 1 - leaving * 0.5, p);
+
+        // The system starts arriving as the phone starts to leave, so act V
+        // does not begin on a cut.
+        if (leaving > 0) {
+          const arrive = easeOut(leaving);
+          ctx.save();
+          ctx.globalAlpha *= arrive;
+          ctx.translate(SW * (1 - arrive) * 0.5, 0);
+          system(1, { cloud: 1 });
+          cloudLabel(1);
+          ctx.restore();
         }
       }
 
@@ -495,9 +523,13 @@ export default function StageCanvas() {
         cloudLabel(1);
         const settle = 1;
 
+        // The phone finishes leaving across the first beat of this act.
+        const exiting = 1 - beat(p, 0, 0.12);
+        if (exiting > 0) phone(-SW * 0.55 - SW * 0.45 * (1 - exiting), exiting * 0.5, 1);
+
         const named = beat(p, 0.1, 0.24);
         if (named > 0) {
-          label("autonomous agentic system", CLOUD.x, SH - 40, 10.5, A.dim * named);
+          label("autonomous agentic system", CLOUD.x, SH - 30, 10.5, A.dim * named);
         }
 
         panes.forEach((pane, i) => {
@@ -566,16 +598,16 @@ export default function StageCanvas() {
           ctx.beginPath();
           ctx.roundRect(target.x - 4, target.y - 4, target.w + 8, target.h + 8, 11);
           ctx.stroke();
-          label("DENIED · pt-3", target.x + 14, target.y + target.h - 16, 10, 0.95 * a, cDeny);
+          label("DENIED · pt-3", target.x + 12, target.y + target.h - 15, 9, 0.95 * a, cDeny);
         }
 
         const citeLabel = clamp((cited - 0.45) / 0.55);
         if (citeLabel > 0) {
           label(
             "cites pt-3 + evidence",
-            target.x + 14,
-            target.y + target.h - 16,
-            10,
+            target.x + 12,
+            target.y + target.h - 15,
+            9,
             A.text * citeLabel,
           );
         }
@@ -629,7 +661,7 @@ export default function StageCanvas() {
         const copyW = Math.min(544, wrapW * 0.5);
         const sceneLeft = wrapLeft + copyW + 76;
         const boxW = narrow ? w * 0.9 : Math.max(wrapLeft + wrapW - sceneLeft, 300);
-        const scale = Math.min(boxW / SW, (h * 0.72) / SH);
+        const scale = Math.min(boxW / SW, (h * 0.8) / SH);
         const ox = narrow ? (w - SW * scale) / 2 : sceneLeft + (boxW - SW * scale) / 2;
         const oy = (h - SH * scale) / 2;
 
@@ -662,7 +694,7 @@ export default function StageCanvas() {
         trigger: wrapRef.current!,
         start: "top top",
         end: "bottom bottom",
-        scrub: reduced ? true : 0.6,
+        scrub: reduced ? true : 0.45,
         onUpdate: (self) => {
           progress.current = self.progress;
           draw();
