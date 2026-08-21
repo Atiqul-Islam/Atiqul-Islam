@@ -654,6 +654,7 @@ footer {
 </header>
 
 <main id="main">
+  <div id="top-sentinel" aria-hidden="true"></div>
   <div id="top" class="wrap hero">
     <div class="hero-grid">
       <div class="hero-copy">
@@ -923,7 +924,10 @@ footer {
 
   /* ── Header hairline once the page has moved ────────────────────────────── */
   const bar = document.querySelector("header.bar");
-  const sentinel = document.getElementById("top");
+  /* Its own zero height sentinel, not the hero. The hero parallaxes, so its
+     box travels down with the reader and keeps intersecting long after the
+     page has moved, which left the header hairline permanently off. */
+  const sentinel = document.getElementById("top-sentinel");
   new IntersectionObserver(
     ([e]) => bar.classList.toggle("stuck", !e.isIntersecting),
     { rootMargin: "-64px 0px 0px 0px" }
